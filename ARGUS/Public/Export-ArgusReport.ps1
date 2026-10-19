@@ -8,6 +8,9 @@ function Export-ArgusReport {
         HTML report from it, without connecting to the tenant. Useful to re-render a past run with a newer
         report template, or to build the sample report from fixtures.
 
+        The report has no external dependencies (no CDN, fonts or network access) and can be opened offline
+        or sent to a customer. Tenant data is rendered as text only.
+
     .PARAMETER InputPath
         Path of the results JSON file.
 
@@ -15,7 +18,11 @@ function Export-ArgusReport {
         Path of the HTML file to write. Defaults to the input path with the .html extension.
 
     .PARAMETER MaxFindingsInHtml
-        Maximum number of findings rows embedded in the HTML report per check. Defaults to 500.
+        Maximum number of findings rows embedded in the HTML report per check. Defaults to the value
+        recorded in the results file (Run.MaxFindingsInHtml), or 500.
+
+    .PARAMETER LogoPath
+        Optional logo (png, jpg, gif or svg, max 1 MB) embedded in the report header.
 
     .PARAMETER NoBrowser
         Do not open the HTML report in the default browser.
@@ -53,11 +60,45 @@ function Export-ArgusReport {
         [int] $MaxFindingsInHtml = 500,
 
         [Parameter()]
+        [string] $LogoPath,
+
+        [Parameter()]
         [switch] $NoBrowser
     )
 
     process {
-        Write-Verbose "Export-ArgusReport called with parameters: $($PSBoundParameters.Keys -join ', ')"
-        throw [System.NotImplementedException]::new('Export-ArgusReport is not implemented yet (planned for Phase 3).')
+        $inputFull = [System.IO.Path]::GetFullPath($InputPath, (Get-Location).ProviderPath)
+        if (-not (Test-Path -LiteralPath $inputFull -PathType Leaf)) {
+            throw "Results file '$inputFull' not found."
+        }
+        $json = [System.IO.File]::ReadAllText($inputFull)
+
+        try {
+            $root = [System.Text.Json.Nodes.JsonNode]::Parse($json)
+        }
+        catch {
+            throw "Results file '$inputFull' is not valid JSON: $($_.Exception.Message)"
+        }
+        $schema = if ($root -is [System.Text.Json.Nodes.JsonObject] -and $null -ne $root['SchemaVersion']) { $root['SchemaVersion'].ToString() } else { '' }
+        if ($schema -notmatch '^1\.\d+$') {
+            throw "Results file '$inputFull' has unsupported SchemaVersion '$schema' (expected 1.x)."
+        }
+
+        $max = $MaxFindingsInHtml
+        if (-not $PSBoundParameters.ContainsKey('MaxFindingsInHtml') -and $root['Run'] -is [System.Text.Json.Nodes.JsonObject] -and $null -ne $root['Run']['MaxFindingsInHtml']) {
+            $max = [int]$root['Run']['MaxFindingsInHtml'].ToString()
+        }
+
+        $outputFull = if ($OutputPath) { [System.IO.Path]::GetFullPath($OutputPath, (Get-Location).ProviderPath) }
+        else { [System.IO.Path]::ChangeExtension($inputFull, '.html') }
+        $directory = Split-Path -Path $outputFull -Parent
+        if (-not (Test-Path -LiteralPath $directory)) { $null = New-Item -Path $directory -ItemType Directory -Force }
+
+        $html = ConvertTo-ArgusHtml -Json $json -MaxFindingsInHtml $max -LogoPath $LogoPath
+        [System.IO.File]::WriteAllText($outputFull, $html, [System.Text.UTF8Encoding]::new($false))
+        Write-Verbose "Report written to $outputFull"
+
+        if (-not $NoBrowser) { Open-ArgusFile -Path $outputFull }
+        Get-Item -LiteralPath $outputFull
     }
 }

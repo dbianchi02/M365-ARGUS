@@ -185,7 +185,7 @@ function Invoke-ArgusCheckRunner {
             ErrorMessage    = $result.ErrorMessage
             Duration        = [math]::Round($stopwatch.Elapsed.TotalSeconds, 3)
             Parameters      = $parameters
-            Description     = $definition.Description
+            Description     = Resolve-ArgusTemplate -Template $definition.Description -Values $parameters
             Rationale       = $definition.Rationale
             Remediation     = $definition.Remediation
             References      = @($definition.References)

@@ -164,10 +164,13 @@ function Invoke-Argus {
         }
     }
     if ('Html' -in $OutputFormat) {
-        # Implemented in Phase 3 (Export-ArgusReport / ConvertTo-ArgusHtml).
-        Write-Warning 'HTML output is not implemented yet (Phase 3); use -OutputFormat Json.'
+        $htmlPath = [System.IO.Path]::GetFullPath((Join-Path $OutputPath "$baseName.html"), (Get-Location).ProviderPath)
+        $json = $document | ConvertTo-Json -Depth 10
+        $html = ConvertTo-ArgusHtml -Json $json -MaxFindingsInHtml $config.Report.MaxFindingsInHtml -LogoPath $config.Report.LogoPath
+        [System.IO.File]::WriteAllText($htmlPath, $html, [System.Text.UTF8Encoding]::new($false))
+        $files.Add((Get-Item -LiteralPath $htmlPath))
+        if (-not $NoBrowser) { Open-ArgusFile -Path $htmlPath }
     }
-    Write-Verbose "NoBrowser: $NoBrowser"
 
     Write-ArgusRunSummary -Document $document -File $files
 

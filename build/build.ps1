@@ -76,8 +76,12 @@ function Invoke-DocsTask {
 }
 
 function Invoke-SampleTask {
-    # Implemented in Phase 3: Export-ArgusReport -InputPath tests/Fixtures/sample-results.json.
-    Write-Warning 'Sample task is a placeholder until Phase 3 (HTML report not implemented yet). Nothing generated.'
+    # The fixture itself is regenerated with tests/Fixtures/New-SampleResult.ps1 (deterministic).
+    Import-Module (Join-Path $moduleRoot 'ARGUS.psd1') -Force
+    $fixture = Join-Path $repoRoot 'tests/Fixtures/sample-results.json'
+    $target = Join-Path $repoRoot 'samples/sample-report.html'
+    $file = Export-ArgusReport -InputPath $fixture -OutputPath $target -NoBrowser
+    Write-Information "Sample: $($file.FullName) ($([math]::Round($file.Length / 1KB)) KB)"
 }
 
 function Invoke-PackageTask {
