@@ -1,0 +1,28 @@
+# Build and run output (reports from real tenants must never be committed)
+output/
+*.argus.json
+ARGUS-Report-*.html
+ARGUS-Report-*.json
+ARGUS-Report-*.csv
+
+# Test results and local test files
+testResults.xml
+coverage.xml
+tests/Local/
+*.local.json
+*.local.ps1
+
+# Credentials / certificates
+*.pfx
+*.cer
+*.pem
+*.key
+
+# Editors / OS
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
