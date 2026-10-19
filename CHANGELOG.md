@@ -24,3 +24,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Outputs: versioned results JSON (`SchemaVersion` 1.0), one CSV per failed check (formula-safe),
   console summary.
 - `Get-ArgusCheck`, `New-ArgusConfig` and `Invoke-Argus -OutputFormat Json, Csv` are functional.
+- HTML report (single self-contained file, vanilla JS/CSS, strict Content-Security-Policy): header,
+  score ring with grade and coverage, clickable KPI tiles, SVG status donut / area bars / failed-by-severity,
+  areas table, checks grouped by area with search, filters, sorting, expand/collapse, deep links
+  (`#ARG.ENT.001`), lazy check details with findings table (cap, filter, sort, client-side CSV export),
+  remediation with copyable PowerShell sample, references, parameters, footer with permissions and
+  checks not evaluated; light/dark theme with toggle; print stylesheet; concealed-names and Partial banners.
+- Report design: minimal, document-like layout. Overview with score, one passed/failed bar and three
+  counts; areas table; checks grouped by area (failed first); single-column check detail. Green and red
+  only for Passed/Failed, every other status grey and written out; no shadows or decorative icons.
+- `Export-ArgusReport` (re-render from results JSON, optional `-LogoPath`) and `Invoke-Argus -OutputFormat Html`.
+- Realistic fictitious fixture (`tests/Fixtures/New-SampleResult.ps1`) and `samples/sample-report.html`.

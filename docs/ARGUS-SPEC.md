@@ -208,24 +208,24 @@ Recommended delegated role for interactive runs: **Global Reader** (+ Reports Re
 
 ## 10. HTML report
 
-### Look & feel
-Minimal, functional, inspired by the Maester report layout. Neutral palette (near-white / near-black backgrounds, grey borders), **one accent colour**, status colours used only for status: Passed green, Failed red, Investigate amber, Error purple, Skipped grey, NotRun light grey. System font stack, monospace for IDs/code. Light/dark mode (follows `prefers-color-scheme`, manual toggle). Responsive down to tablet width. Print stylesheet (expanded details, no interactive controls) so it can be saved as PDF for a customer.
+### Look & feel (revised 2026-10-19 after review: "more minimal, essentials only")
+Minimal, document-like. Neutral greys, flat surfaces with hairline borders (no shadows, gradients or decorative icons). **Green and red are the only colours**, for Passed and Failed; every other status (Investigate shown as "To review", Error, Skipped, NotRun) is grey and always written out. Status marks use shape as well as colour (check / cross / dash). System font stack, monospace for IDs/code. Light/dark mode (follows `prefers-color-scheme`, manual toggle). Responsive down to tablet width. Print stylesheet (light palette, expanded details, no interactive controls) so it can be saved as PDF for a customer.
 
 ### Structure
-1. **Header** — ARGUS logo/wordmark, tenant name + tenant ID, run date/time (with time zone), duration, account used, ARGUS version, optional customer logo/company from config.
-2. **Score panel** — large Governance Score (0–100) as a ring gauge, grade letter, coverage %, *Partial* label when coverage < 70 %.
-3. **KPI tiles** — Total, Passed, Failed, Investigate, Error, Skipped, NotRun. Clicking a tile filters the test list.
-4. **Charts (inline SVG, no libraries)** — status donut; per-area horizontal stacked bars (status distribution) with area score; failed checks by severity.
-5. **Areas overview table** — Area, score, Passed/Failed/Investigate/Error/Skipped, link to the area section (like Maester's block summary).
-6. **Test list** — grouped by Area (EntraID, Applications, Licensing, Groups & Teams, SharePoint, Exchange), each group collapsible. Row: status badge, Id, Title, Severity, AffectedCount, duration. Toolbar: text search, filters (status, area, severity), sort, "expand all / collapse all", "show only failed".
-7. **Test detail** (expandable row or side panel, deep-linkable via `#ARG.ENT.001`):
+1. **Header** — ARGUS wordmark, tenant name, default domain, run date/time (with time zone), account used, optional company/logo from config. Tenant ID, duration and version move to the footer run details.
+2. **Warnings** — amber informational banner when relevant (concealed report names); amber is used only here.
+3. **Overview** — Governance Score (0–100) as a large number with grade and coverage, *Partial* label when coverage < 70 %; one bar Passed (green) / Failed (red) / Other (grey) with the three counts, clickable to filter the list; one line breaking down "Other".
+4. **Charts (inline SVG, green/red/grey only)** — Results donut with pass rate; Failed by severity bars; Largest findings (top 5 failed checks by affected objects, linking to the check).
+5. **Area cards** — score, grade, passed/failed/other bar and counts; selecting a card filters the list.
+6. **Test list** — one collapsible card per Area with column headings (Status, Id, Check, Severity, Affected); inside each area Failed first (by severity), then the other statuses, then Passed. Status badge: green Passed, red Failed, grey for the rest with the name written out. Column headings Status, Id, Check and Severity sort every area (click again to reverse; default Status). Toolbar (sticky): All / Failed / Passed / Other filter and text search. Only one check is open at a time. Page title (also the default PDF file name): `ARGUS - <tenant> - <date>`.
+7. **Test detail** (expandable row, single-column panel with a status-coloured edge, deep-linkable via `#ARG.ENT.001`, Previous / Next buttons that follow the active filters):
    - Status, severity, summary sentence, affected/evaluated counts;
    - *Description* and *Why it matters*;
    - *What was found* — findings table (first `MaxFindingsInHtml` rows, note "showing 500 of 3,214 — full list in CSV/JSON"), with per-table search and **Export CSV** button (client-side);
    - *How to fix* — numbered steps, portal link, PowerShell snippet in a code block with **Copy** button, clearly labelled "sample — review before running";
    - *References* (Learn links);
    - Skip reason / error message when relevant; parameters used (e.g. `InactiveDays = 90`).
-8. **Footer** — permissions/scopes used, checks not evaluated and why, disclaimer, link to project repo.
+8. **Footer** — collapsible "Run details" (checks not evaluated and why, scopes used, connected services, filters, configuration, tenant ID, duration, version), one-line disclaimer, link to project repo.
 
 ### Implementation
 - `Report/template.html` contains `<script type="application/json" id="argus-data">__ARGUS_DATA__</script>`; the renderer serialises results with `ConvertTo-Json -Depth 10 -Compress`, escapes `</` sequences, and inlines `report.css` + `report.js`.
