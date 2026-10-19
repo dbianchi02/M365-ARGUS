@@ -1,0 +1,20 @@
+{
+  "Exclusions": {
+    "UserPrincipalNames": [],
+    "ObjectIds": [],
+    "GroupIds": [],
+    "SiteUrls": [],
+    "AppIds": []
+  },
+  "Checks": {},
+  "Scoring": {
+    "Weights": { "Critical": 10, "High": 5, "Medium": 3, "Low": 1, "Info": 0 },
+    "InvestigateCredit": 0.5,
+    "PartialCoverageThreshold": 70
+  },
+  "Report": {
+    "MaxFindingsInHtml": 500,
+    "CompanyName": "",
+    "LogoPath": ""
+  }
+}

@@ -1,0 +1,458 @@
+{
+  "SchemaVersion": "1.0",
+  "Tool": {
+    "Name": "ARGUS",
+    "Version": "0.1.0-beta1",
+    "ProjectUri": "https://github.com/dbianchi02/M365-ARGUS"
+  },
+  "Run": {
+    "StartedAt": "2026-10-19T10:12:35.3375598+02:00",
+    "FinishedAt": "2026-10-19T10:12:36.9077687+02:00",
+    "DurationSeconds": 1.6,
+    "TimeZone": "W. Europe Standard Time",
+    "Account": null,
+    "AuthMode": null,
+    "Filters": {
+      "Area": [],
+      "Id": [],
+      "ExcludeId": [
+        "ARG.SPO.906"
+      ],
+      "Tag": []
+    },
+    "ConfigFile": "sample-config.json",
+    "ExclusionCounts": {
+      "UserPrincipalNames": 0,
+      "ObjectIds": 0,
+      "GroupIds": 0,
+      "SiteUrls": 0,
+      "AppIds": 1
+    },
+    "MaxFindingsInHtml": 500
+  },
+  "Tenant": {
+    "Id": null,
+    "Name": null,
+    "DefaultDomain": null
+  },
+  "Environment": {
+    "ConnectedServices": [],
+    "GrantedScopes": null,
+    "Licenses": null,
+    "ConcealedReportNames": null
+  },
+  "Report": {
+    "CompanyName": "Contoso (fictitious)"
+  },
+  "Score": {
+    "Score": 41,
+    "Grade": "D",
+    "Coverage": 84.6,
+    "IsPartial": false,
+    "EarnedWeight": 4.5,
+    "EvaluatedWeight": 11.0,
+    "SelectedWeight": 13.0,
+    "Counts": {
+      "Total": 6,
+      "Passed": 1,
+      "Failed": 1,
+      "Investigate": 1,
+      "Skipped": 1,
+      "Error": 1,
+      "NotRun": 1
+    },
+    "Areas": [
+      {
+        "Area": "EntraID",
+        "DisplayName": "Entra ID",
+        "Score": 100,
+        "Grade": "A",
+        "Coverage": 100.0,
+        "IsPartial": false,
+        "EarnedWeight": 3.0,
+        "EvaluatedWeight": 3.0,
+        "SelectedWeight": 3.0,
+        "Counts": {
+          "Total": 1,
+          "Passed": 1,
+          "Failed": 0,
+          "Investigate": 0,
+          "Skipped": 0,
+          "Error": 0,
+          "NotRun": 0
+        }
+      },
+      {
+        "Area": "Applications",
+        "DisplayName": "Applications",
+        "Score": 0,
+        "Grade": "F",
+        "Coverage": 100.0,
+        "IsPartial": false,
+        "EarnedWeight": 0.0,
+        "EvaluatedWeight": 5.0,
+        "SelectedWeight": 5.0,
+        "Counts": {
+          "Total": 1,
+          "Passed": 0,
+          "Failed": 1,
+          "Investigate": 0,
+          "Skipped": 0,
+          "Error": 0,
+          "NotRun": 0
+        }
+      },
+      {
+        "Area": "Licensing",
+        "DisplayName": "Licensing",
+        "Score": null,
+        "Grade": null,
+        "Coverage": 0.0,
+        "IsPartial": true,
+        "EarnedWeight": 0.0,
+        "EvaluatedWeight": 0.0,
+        "SelectedWeight": 1.0,
+        "Counts": {
+          "Total": 1,
+          "Passed": 0,
+          "Failed": 0,
+          "Investigate": 0,
+          "Skipped": 0,
+          "Error": 1,
+          "NotRun": 0
+        }
+      },
+      {
+        "Area": "GroupsTeams",
+        "DisplayName": "Groups & Teams",
+        "Score": 50,
+        "Grade": "D",
+        "Coverage": 100.0,
+        "IsPartial": false,
+        "EarnedWeight": 1.5,
+        "EvaluatedWeight": 3.0,
+        "SelectedWeight": 3.0,
+        "Counts": {
+          "Total": 1,
+          "Passed": 0,
+          "Failed": 0,
+          "Investigate": 1,
+          "Skipped": 0,
+          "Error": 0,
+          "NotRun": 0
+        }
+      },
+      {
+        "Area": "SharePoint",
+        "DisplayName": "SharePoint & OneDrive",
+        "Score": null,
+        "Grade": null,
+        "Coverage": 0.0,
+        "IsPartial": true,
+        "EarnedWeight": 0.0,
+        "EvaluatedWeight": 0.0,
+        "SelectedWeight": 0.0,
+        "Counts": {
+          "Total": 1,
+          "Passed": 0,
+          "Failed": 0,
+          "Investigate": 0,
+          "Skipped": 0,
+          "Error": 0,
+          "NotRun": 1
+        }
+      },
+      {
+        "Area": "Exchange",
+        "DisplayName": "Exchange Online",
+        "Score": null,
+        "Grade": null,
+        "Coverage": 0.0,
+        "IsPartial": true,
+        "EarnedWeight": 0.0,
+        "EvaluatedWeight": 0.0,
+        "SelectedWeight": 1.0,
+        "Counts": {
+          "Total": 1,
+          "Passed": 0,
+          "Failed": 0,
+          "Investigate": 0,
+          "Skipped": 1,
+          "Error": 0,
+          "NotRun": 0
+        }
+      }
+    ],
+    "Weights": {
+      "Critical": 10,
+      "Low": 1,
+      "Medium": 3,
+      "Info": 0,
+      "High": 5
+    },
+    "InvestigateCredit": 0.5,
+    "PartialCoverageThreshold": 70.0
+  },
+  "Results": [
+    {
+      "Id": "ARG.ENT.901",
+      "Title": "Fake check that passes",
+      "Area": "EntraID",
+      "AreaDisplayName": "Entra ID",
+      "Category": "Test fixtures",
+      "Severity": "Medium",
+      "Status": "Passed",
+      "Summary": "All 1,204 fake users are compliant.",
+      "AffectedCount": 0,
+      "EvaluatedCount": 1204,
+      "ExcludedCount": 0,
+      "Findings": [],
+      "FindingColumns": [],
+      "SkipReason": null,
+      "ErrorMessage": null,
+      "Duration": 0.076,
+      "Parameters": {},
+      "Description": "Fake check used by the Pester tests. It always passes.",
+      "Rationale": "Exercises the **Passed** path of the runner.",
+      "Remediation": {
+        "Steps": "1. Nothing to do.\n2. This is a test fixture.",
+        "PowerShell": "# Sample only - not executed by ARGUS",
+        "PortalUrl": "https://entra.microsoft.com/"
+      },
+      "References": [
+        {
+          "Title": "ARGUS specification",
+          "Url": "https://github.com/dbianchi02/M365-ARGUS"
+        }
+      ],
+      "Requires": {
+        "Services": [],
+        "GraphScopes": [],
+        "Licenses": [],
+        "DataSets": []
+      },
+      "Tags": [
+        "Fake",
+        "Users"
+      ],
+      "UsesBeta": false,
+      "IsCustom": true
+    },
+    {
+      "Id": "ARG.APP.902",
+      "Title": "Fake secrets expiring within 30 days",
+      "Area": "Applications",
+      "AreaDisplayName": "Applications",
+      "Category": "Test fixtures",
+      "Severity": "High",
+      "Status": "Failed",
+      "Summary": "2 of 39 fake apps have a secret expiring within 30 days. 1 object(s) excluded by configuration.",
+      "AffectedCount": 2,
+      "EvaluatedCount": 39,
+      "ExcludedCount": 1,
+      "Findings": [
+        {
+          "DisplayName": "Fake App One",
+          "AppId": "11111111-1111-1111-1111-111111111111",
+          "SecretEnd": "2026-01-06T00:00:00Z"
+        },
+        {
+          "DisplayName": "<script>alert(1)</script>",
+          "AppId": "22222222-2222-2222-2222-222222222222",
+          "SecretEnd": "2026-01-13T00:00:00Z"
+        }
+      ],
+      "FindingColumns": [
+        "DisplayName",
+        "AppId",
+        "SecretEnd"
+      ],
+      "SkipReason": null,
+      "ErrorMessage": null,
+      "Duration": 0.045,
+      "Parameters": {
+        "DaysAhead": 30
+      },
+      "Description": "Fake check used by the Pester tests. It always fails with three findings.",
+      "Rationale": "Exercises the **Failed** path, findings, exclusions and parameter placeholders.",
+      "Remediation": {
+        "Steps": "1. Open **App registrations**.\n2. Rotate the secret.",
+        "PowerShell": "# Sample only - not executed by ARGUS",
+        "PortalUrl": "https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade"
+      },
+      "References": [
+        {
+          "Title": "ARGUS specification",
+          "Url": "https://github.com/dbianchi02/M365-ARGUS"
+        }
+      ],
+      "Requires": {
+        "Services": [],
+        "GraphScopes": [],
+        "Licenses": [],
+        "DataSets": []
+      },
+      "Tags": [
+        "Fake",
+        "Credentials"
+      ],
+      "UsesBeta": false,
+      "IsCustom": true
+    },
+    {
+      "Id": "ARG.LIC.903",
+      "Title": "Fake check that throws",
+      "Area": "Licensing",
+      "AreaDisplayName": "Licensing",
+      "Category": "Test fixtures",
+      "Severity": "Low",
+      "Status": "Error",
+      "Summary": "",
+      "AffectedCount": 0,
+      "EvaluatedCount": null,
+      "ExcludedCount": 0,
+      "Findings": [],
+      "FindingColumns": [],
+      "SkipReason": null,
+      "ErrorMessage": "Simulated failure while reading fake data.",
+      "Duration": 0.039,
+      "Parameters": {},
+      "Description": "Fake check used by the Pester tests. It always throws an exception.",
+      "Rationale": "Exercises the **Error** path: the run must continue.",
+      "Remediation": {
+        "Steps": "1. Nothing to do.",
+        "PowerShell": "",
+        "PortalUrl": ""
+      },
+      "References": [],
+      "Requires": {
+        "Services": [],
+        "GraphScopes": [],
+        "Licenses": [],
+        "DataSets": []
+      },
+      "Tags": [
+        "Fake"
+      ],
+      "UsesBeta": false,
+      "IsCustom": true
+    },
+    {
+      "Id": "ARG.GRP.904",
+      "Title": "Fake setting that needs manual review",
+      "Area": "GroupsTeams",
+      "AreaDisplayName": "Groups & Teams",
+      "Category": "Test fixtures",
+      "Severity": "Medium",
+      "Status": "Investigate",
+      "Summary": "Group creation is unrestricted; acceptable in some organisations.",
+      "AffectedCount": 0,
+      "EvaluatedCount": null,
+      "ExcludedCount": 0,
+      "Findings": [],
+      "FindingColumns": [],
+      "SkipReason": null,
+      "ErrorMessage": null,
+      "Duration": 0.047,
+      "Parameters": {},
+      "Description": "Fake check used by the Pester tests. It always returns Investigate.",
+      "Rationale": "Exercises the **Investigate** path and its partial scoring credit.",
+      "Remediation": {
+        "Steps": "1. Review the setting with the customer.",
+        "PowerShell": "",
+        "PortalUrl": ""
+      },
+      "References": [],
+      "Requires": {
+        "Services": [],
+        "GraphScopes": [],
+        "Licenses": [],
+        "DataSets": []
+      },
+      "Tags": [
+        "Fake",
+        "Groups"
+      ],
+      "UsesBeta": false,
+      "IsCustom": true
+    },
+    {
+      "Id": "ARG.SPO.906",
+      "Title": "Fake check excluded from the run",
+      "Area": "SharePoint",
+      "AreaDisplayName": "SharePoint & OneDrive",
+      "Category": "Test fixtures",
+      "Severity": "Low",
+      "Status": "NotRun",
+      "Summary": "",
+      "AffectedCount": 0,
+      "EvaluatedCount": null,
+      "ExcludedCount": 0,
+      "Findings": [],
+      "FindingColumns": [],
+      "SkipReason": "Excluded with -ExcludeId.",
+      "ErrorMessage": null,
+      "Duration": 0.003,
+      "Parameters": {},
+      "Description": "Fake check used by the Pester tests and the sample results. Excluded with -ExcludeId.",
+      "Rationale": "Exercises the **NotRun** status.",
+      "Remediation": {
+        "Steps": "1. Nothing to do.",
+        "PowerShell": "",
+        "PortalUrl": ""
+      },
+      "References": [],
+      "Requires": {
+        "Services": [],
+        "GraphScopes": [],
+        "Licenses": [],
+        "DataSets": []
+      },
+      "Tags": [
+        "Fake"
+      ],
+      "UsesBeta": false,
+      "IsCustom": true
+    },
+    {
+      "Id": "ARG.EXO.905",
+      "Title": "Fake check that needs Exchange Online",
+      "Area": "Exchange",
+      "AreaDisplayName": "Exchange Online",
+      "Category": "Test fixtures",
+      "Severity": "Low",
+      "Status": "Skipped",
+      "Summary": "",
+      "AffectedCount": 0,
+      "EvaluatedCount": null,
+      "ExcludedCount": 0,
+      "Findings": [],
+      "FindingColumns": [],
+      "SkipReason": "Not connected to Exchange Online.",
+      "ErrorMessage": null,
+      "Duration": 0.003,
+      "Parameters": {},
+      "Description": "Fake check used by the Pester tests. It requires an Exchange Online connection.",
+      "Rationale": "Exercises the **Skipped** path (prerequisite not met).",
+      "Remediation": {
+        "Steps": "1. Connect with `Connect-Argus -Service Graph, Exchange`.",
+        "PowerShell": "",
+        "PortalUrl": ""
+      },
+      "References": [],
+      "Requires": {
+        "Services": [
+          "Exchange"
+        ],
+        "GraphScopes": [],
+        "Licenses": [],
+        "DataSets": []
+      },
+      "Tags": [
+        "Fake"
+      ],
+      "UsesBeta": false,
+      "IsCustom": true
+    }
+  ]
+}
