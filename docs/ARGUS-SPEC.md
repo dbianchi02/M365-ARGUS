@@ -199,6 +199,13 @@ Graph application/delegated, read-only: `User.Read.All`, `Group.Read.All`, `Grou
 Exchange: `Exchange.ManageAsApp` + Entra role **Global Reader** (app-only) or View-Only Organization Management (delegated).
 Recommended delegated role for interactive runs: **Global Reader** (+ Reports Reader).
 
+### Authentication model (decided 2026-10-19)
+
+- **Primary mode: interactive, delegated.** The operator runs ARGUS signed in as a user holding **Application Administrator** (or Cloud Application Administrator) or **Global Administrator**. `Connect-Argus` requests only the read-only delegated Graph scopes returned by `Get-ArgusRequiredPermission`; on the first run in a tenant the operator grants **tenant-wide admin consent** for them at sign-in.
+- Per Microsoft Learn (*Grant tenant-wide admin consent*), Application Administrator / Cloud Application Administrator can consent to any permission **except Microsoft Graph application permissions (app roles)**; delegated Graph scopes are allowed. App-only Graph consent (Certificate / ManagedIdentity sets) requires Privileged Role Administrator or Global Administrator.
+- In delegated mode the effective access is the **intersection** of consented scopes and the signed-in user's own directory role. Some data sets may need a reader role the Application Administrator role doesn't include (sign-in activity, usage reports, SharePoint tenant settings). Phase 4 verifies on Learn the role needed per data set; `Test-ArgusPrerequisite` reports it, and checks whose data can't be read are Skipped with the reason, not Error.
+- Open for Phase 4: consent to the default Microsoft Graph PowerShell client app vs. a dedicated ARGUS app registration (`-ClientId`).
+
 ## 10. HTML report
 
 ### Look & feel
