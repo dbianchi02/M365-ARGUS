@@ -95,7 +95,7 @@ function Register-ArgusCheck {
         $requires = @{}
     }
     foreach ($key in $requires.Keys) {
-        if ($key -notin 'Services', 'GraphScopes', 'Licenses', 'DataSets') { $problems.Add("Unknown Requires field '$key'.") }
+        if ($key -notin 'Services', 'GraphScopes', 'Licenses', 'DataSets', 'OptionalDataSets') { $problems.Add("Unknown Requires field '$key'.") }
     }
     $services = @($requires['Services'] | Where-Object { $_ })
     foreach ($service in $services) {
@@ -137,6 +137,8 @@ function Register-ArgusCheck {
             GraphScopes = [string[]]@($requires['GraphScopes'] | Where-Object { $_ })
             Licenses    = [string[]]@($requires['Licenses'] | Where-Object { $_ })
             DataSets    = [string[]]@($requires['DataSets'] | Where-Object { $_ })
+            # Loaded only when their service is connected; never an error when unavailable.
+            OptionalDataSets = [string[]]@($requires['OptionalDataSets'] | Where-Object { $_ })
         }
         Parameters      = $parameters.Clone()
         Tags            = [string[]]@(& $get 'Tags' | Where-Object { $_ })

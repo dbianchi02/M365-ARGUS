@@ -29,7 +29,7 @@ Describe 'Register-ArgusCheck' {
         @{ Name = 'a missing Title'; Override = @{ Title = '' }; Message = "*Field 'Title' is mandatory*" }
         @{ Name = 'an invalid Id format'; Override = @{ Id = 'ENT-001' }; Message = '*must match the format ARG.<AREA>.<NNN>*' }
         @{ Name = 'a lowercase Id'; Override = @{ Id = 'arg.ent.001' }; Message = '*must match the format*' }
-        @{ Name = 'an Id that does not match the area'; Override = @{ Id = 'ARG.APP.001' }; Message = '*does not match area*' }
+        @{ Name = 'an Id that does not match the area'; Override = @{ Id = 'ARG.APP.002' }; Message = '*does not match area*' }
         @{ Name = 'an unknown Area'; Override = @{ Area = 'Intune' }; Message = "*Area 'Intune' is not valid*" }
         @{ Name = 'an unknown Severity'; Override = @{ Severity = 'Urgent' }; Message = "*Severity 'Urgent' is not valid*" }
         @{ Name = 'a Test that is not a scriptblock'; Override = @{ Test = 'Get-Date' }; Message = "*Field 'Test' is mandatory and must be a scriptblock*" }
@@ -67,8 +67,8 @@ Describe 'Import-ArgusCheck' {
         $null = New-Item -Path $folder -ItemType Directory
         Copy-Item -Path (Join-Path $script:fakeChecks 'ARG.ENT.901.ps1') -Destination $folder
         Copy-Item -Path (Join-Path $script:fakeChecks 'ARG.ENT.901.ps1') -Destination (Join-Path $folder 'ARG.ENT.999.ps1')
-        Set-Content -Path (Join-Path $folder 'ARG.APP.001.ps1') -Value "Register-ArgusCheck @{ Id = 'ARG.APP.001' }"
-        Set-Content -Path (Join-Path $folder 'ARG.LIC.001.ps1') -Value '# registers nothing'
+        Set-Content -Path (Join-Path $folder 'ARG.APP.002.ps1') -Value "Register-ArgusCheck @{ Id = 'ARG.APP.002' }"
+        Set-Content -Path (Join-Path $folder 'ARG.LIC.006.ps1') -Value '# registers nothing'
         Copy-Item -Path (Join-Path $script:fakeChecks 'ARG.GRP.904.ps1') -Destination $folder
 
         InModuleScope ARGUS -Parameters @{ Path = $folder } {

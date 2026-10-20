@@ -16,8 +16,8 @@ Describe 'Invoke-ArgusCheckRunner' {
             InModuleScope ARGUS {
                 $checks = @(
                     Get-TestCheck -Override @{ Id = 'ARG.ENT.001'; Test = { param($Context) throw 'boom' } }
-                    Get-TestCheck -Override @{ Id = 'ARG.ENT.002'; Test = { param($Context) New-ArgusResult -Status Failed -Findings @([pscustomobject]@{ A = 1 }) } }
-                    Get-TestCheck -Override @{ Id = 'ARG.ENT.003' }
+                    Get-TestCheck -Override @{ Id = 'ARG.ENT.007'; Test = { param($Context) New-ArgusResult -Status Failed -Findings @([pscustomobject]@{ A = 1 }) } }
+                    Get-TestCheck -Override @{ Id = 'ARG.ENT.005' }
                 )
                 $results = @(Invoke-ArgusCheckRunner -Check $checks -Config (Get-ArgusConfig) -Environment (Get-TestEnvironment))
                 $results.Status | Should -Be @('Error', 'Failed', 'Passed')
@@ -113,8 +113,8 @@ Describe 'Invoke-ArgusCheckRunner' {
             InModuleScope ARGUS {
                 $script:filterChecks = @(
                     Get-TestCheck -Override @{ Id = 'ARG.ENT.001'; Tags = @('Users') }
-                    Get-TestCheck -Override @{ Id = 'ARG.ENT.002'; Tags = @('Guests') }
-                    Get-TestCheck -Override @{ Id = 'ARG.APP.001'; Area = 'Applications'; Tags = @('Credentials') }
+                    Get-TestCheck -Override @{ Id = 'ARG.ENT.007'; Tags = @('Guests') }
+                    Get-TestCheck -Override @{ Id = 'ARG.APP.002'; Area = 'Applications'; Tags = @('Credentials') }
                 )
             }
         }
@@ -124,7 +124,7 @@ Describe 'Invoke-ArgusCheckRunner' {
             @{ Name = 'selects by Id with wildcards'; Filter = @{ Id = 'ARG.ENT.*' }; Expected = @('Passed', 'Passed', 'NotRun'); Reason = '*-Id filter*' }
             @{ Name = 'selects by tag'; Filter = @{ Tag = 'Guests' }; Expected = @('NotRun', 'Passed', 'NotRun'); Reason = '*-Tag filter*' }
             @{ Name = 'excludes by Id'; Filter = @{ ExcludeId = 'ARG.ENT.00*' }; Expected = @('NotRun', 'NotRun', 'Passed'); Reason = '*-ExcludeId*' }
-            @{ Name = 'combines filters'; Filter = @{ Area = 'EntraID'; ExcludeId = 'ARG.ENT.002' }; Expected = @('Passed', 'NotRun', 'NotRun'); Reason = '*' }
+            @{ Name = 'combines filters'; Filter = @{ Area = 'EntraID'; ExcludeId = 'ARG.ENT.007' }; Expected = @('Passed', 'NotRun', 'NotRun'); Reason = '*' }
         ) {
             InModuleScope ARGUS -Parameters @{ Filter = $Filter; Expected = $Expected; Reason = $Reason } {
                 $results = @(Invoke-ArgusCheckRunner -Check $script:filterChecks -Config (Get-ArgusConfig) -Environment (Get-TestEnvironment) @Filter)
@@ -136,7 +136,7 @@ Describe 'Invoke-ArgusCheckRunner' {
         It 'marks checks disabled in configuration as NotRun' {
             InModuleScope ARGUS {
                 $config = Get-ArgusConfig
-                $config.Checks['ARG.ENT.002'] = @{ Enabled = $false }
+                $config.Checks['ARG.ENT.007'] = @{ Enabled = $false }
                 $results = @(Invoke-ArgusCheckRunner -Check $script:filterChecks -Config $config -Environment (Get-TestEnvironment))
                 $results[1].Status | Should -Be 'NotRun'
                 $results[1].SkipReason | Should -Be 'Disabled in configuration.'
@@ -189,7 +189,7 @@ Describe 'Invoke-ArgusCheckRunner' {
                 Mock Get-ArgusData { switch ($Name) { 'Users' { , @('u1', 'u2') } 'Groups' { , @('g1') } } }
                 $checks = @(
                     Get-TestCheck -Override @{ Id = 'ARG.ENT.001'; Requires = @{ DataSets = @('Users') }; Test = { param($Context) New-ArgusResult -Status Passed -Summary ("{0}|{1}" -f @($Context.Data['Users']).Count, $Context.Data.ContainsKey('Groups')) } }
-                    Get-TestCheck -Override @{ Id = 'ARG.ENT.002'; Requires = @{ DataSets = @('Users', 'Groups') }; Test = { param($Context) New-ArgusResult -Status Passed -Summary ("{0}|{1}" -f @($Context.Data['Users']).Count, @($Context.Data['Groups']).Count) } }
+                    Get-TestCheck -Override @{ Id = 'ARG.ENT.007'; Requires = @{ DataSets = @('Users', 'Groups') }; Test = { param($Context) New-ArgusResult -Status Passed -Summary ("{0}|{1}" -f @($Context.Data['Users']).Count, @($Context.Data['Groups']).Count) } }
                 )
                 $results = @(Invoke-ArgusCheckRunner -Check $checks -Config (Get-ArgusConfig) -Environment (Get-TestEnvironment))
                 $results[0].Summary | Should -Be '2|False'
@@ -204,9 +204,9 @@ Describe 'Invoke-ArgusCheckRunner' {
                 Mock Get-ArgusData { , @() }
                 $checks = @(
                     Get-TestCheck -Override @{ Id = 'ARG.ENT.001'; Requires = @{ Services = @('Exchange'); DataSets = @('Mailboxes') } }
-                    Get-TestCheck -Override @{ Id = 'ARG.ENT.002'; Requires = @{ DataSets = @('Devices') } }
+                    Get-TestCheck -Override @{ Id = 'ARG.ENT.007'; Requires = @{ DataSets = @('Devices') } }
                 )
-                $null = Invoke-ArgusCheckRunner -Check $checks -Config (Get-ArgusConfig) -Environment (Get-TestEnvironment) -ExcludeId 'ARG.ENT.002'
+                $null = Invoke-ArgusCheckRunner -Check $checks -Config (Get-ArgusConfig) -Environment (Get-TestEnvironment) -ExcludeId 'ARG.ENT.007'
                 Should -Invoke Get-ArgusData -Times 0 -Exactly
             }
         }

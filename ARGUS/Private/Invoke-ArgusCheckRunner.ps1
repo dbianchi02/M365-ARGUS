@@ -84,6 +84,21 @@ function Invoke-ArgusCheckRunner {
     }
     Write-Progress -Id 1 -Activity 'ARGUS: loading tenant data' -Completed
 
+    # Optional data sets: loaded only when their service is connected; a failure is a note, not an error.
+    $serviceOf = @{}
+    foreach ($dataSet in Get-ArgusDataSetDefinition) { $serviceOf[$dataSet.Name] = $dataSet.Service }
+    $optionalNames = @($runnable | ForEach-Object { $_.Check.Requires.OptionalDataSets } | Where-Object { $_ -and -not $data.ContainsKey($_) } | Sort-Object -Unique)
+    foreach ($name in $optionalNames) {
+        $service = $serviceOf[$name]
+        if ($service -and $service -notin @($Environment.ConnectedServices)) { continue }
+        try {
+            $data[$name] = Get-ArgusData -Name $name -ErrorAction Stop
+        }
+        catch {
+            Add-ArgusDataSetNote -Name $name -Text "Optional data set not loaded: $($_.Exception.Message)"
+        }
+    }
+
     $hasExclusions = [bool]($Config.Exclusions.Values | ForEach-Object { $_ } | Where-Object { $_ })
 
     # 4-5. Execute
@@ -110,6 +125,7 @@ function Invoke-ArgusCheckRunner {
         else {
             $checkData = @{}
             foreach ($name in $definition.Requires.DataSets) { $checkData[$name] = $data[$name] }
+            foreach ($name in $definition.Requires.OptionalDataSets) { if ($data.ContainsKey($name)) { $checkData[$name] = $data[$name] } }
             $context = [pscustomobject]@{
                 CheckId     = $definition.Id
                 Config      = $Config
