@@ -48,7 +48,7 @@ function Get-ArgusCheck {
     [OutputType([pscustomobject])]
     param(
         [Parameter()]
-        [ValidateSet('EntraID', 'Applications', 'Licensing', 'GroupsTeams', 'SharePoint', 'Exchange')]
+        [ValidateSet('EntraID', 'Applications', 'Licensing', 'GroupsTeams', 'SharePoint', 'Exchange', 'Copilot')]
         [string[]] $Area,
 
         [Parameter()]
@@ -77,11 +77,11 @@ function Get-ArgusCheck {
         [pscustomobject]@{
             PSTypeName      = 'Argus.CheckInfo'
             Id              = $check.Id
-            Title           = $check.Title
+            Title           = Resolve-ArgusTemplate -Template $check.Title -Values $check.Parameters
             Area            = $check.Area
             Category        = $check.Category
             Severity        = $check.Severity
-            Description     = $check.Description
+            Description     = Resolve-ArgusTemplate -Template $check.Description -Values $check.Parameters
             Rationale       = $check.Rationale
             Remediation     = $check.Remediation
             References      = $check.References
