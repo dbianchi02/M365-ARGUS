@@ -26,3 +26,7 @@ tests/Local/
 *.swp
 .DS_Store
 Thumbs.db
+
+# Local AI assistant instructions and working notes (kept out of the public repository)
+CLAUDE.md
+PROMPTS.md
