@@ -26,7 +26,8 @@ Describe 'Get-ArgusCheck' {
         @{ Name = 'Id wildcard'; Filter = @{ Id = 'ARG.GRP.*' }; Expected = @('ARG.GRP.904') }
         @{ Name = 'tag'; Filter = @{ Tag = 'Credentials' }; Expected = @('ARG.APP.902') }
     ) {
-        $ids = @(Get-ArgusCheck -CustomCheckPath $script:fakeChecks @Filter | ForEach-Object Id)
+        # Scoped to the fake checks (ARG.*.9xx) so built-in checks don't affect the expectation.
+        $ids = @(Get-ArgusCheck -CustomCheckPath $script:fakeChecks @Filter | Where-Object Id -Like 'ARG.*.9*' | ForEach-Object Id)
         $ids | Should -Be $Expected
     }
 }
@@ -89,6 +90,21 @@ Describe 'Invoke-Argus' {
     It 'returns nothing without -PassThru' {
         $output = Invoke-Argus -CustomCheckPath $script:fakeChecks -OutputFormat Json -OutputPath $script:out -NoBrowser -WarningAction SilentlyContinue
         $output | Should -BeNullOrEmpty
+    }
+
+    It 'prints the banner with version, author and copyright from the manifest' {
+        $manifest = Import-PowerShellDataFile -Path (Join-Path $PSScriptRoot '../../ARGUS/ARGUS.psd1')
+        $info = Invoke-Argus -CustomCheckPath $script:fakeChecks -OutputFormat Json -OutputPath $script:out -NoBrowser -WarningAction SilentlyContinue 6>&1
+        $text = ($info | ForEach-Object { [string]$_ }) -join "`n"
+        $text | Should -Match ([regex]::Escape("Version  $($manifest.ModuleVersion)"))
+        $text | Should -Match ([regex]::Escape("Author   $($manifest.Author)"))
+        $text | Should -Match ([regex]::Escape($manifest.Copyright))
+        if ($manifest.PrivateData.PSData.Prerelease) { $text | Should -Match '\[Preview\]' }
+    }
+
+    It 'omits the banner with -NoBanner' {
+        $info = Invoke-Argus -CustomCheckPath $script:fakeChecks -OutputFormat Json -OutputPath $script:out -NoBrowser -NoBanner -WarningAction SilentlyContinue 6>&1
+        (($info | ForEach-Object { [string]$_ }) -join "`n") | Should -Not -Match 'Governance Utility Suite'
     }
 
     It 'applies the configuration file (exclusions and disabled checks)' {

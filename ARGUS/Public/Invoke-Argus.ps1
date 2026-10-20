@@ -40,6 +40,9 @@ function Invoke-Argus {
     .PARAMETER NoBrowser
         Do not open the HTML report in the default browser at the end of the run.
 
+    .PARAMETER NoBanner
+        Do not print the ARGUS banner (name, version, author, copyright) at the start of the run.
+
     .PARAMETER PassThru
         Return the results object.
 
@@ -81,7 +84,7 @@ function Invoke-Argus {
     [OutputType([pscustomobject])]
     param(
         [Parameter()]
-        [ValidateSet('EntraID', 'Applications', 'Licensing', 'GroupsTeams', 'SharePoint', 'Exchange')]
+        [ValidateSet('EntraID', 'Applications', 'Licensing', 'GroupsTeams', 'SharePoint', 'Exchange', 'Copilot')]
         [string[]] $Area,
 
         [Parameter()]
@@ -111,6 +114,9 @@ function Invoke-Argus {
         [switch] $NoBrowser,
 
         [Parameter()]
+        [switch] $NoBanner,
+
+        [Parameter()]
         [switch] $PassThru,
 
         [Parameter()]
@@ -121,6 +127,7 @@ function Invoke-Argus {
         [int] $MaxFindingsInHtml = 500
     )
 
+    if (-not $NoBanner) { Write-ArgusBanner }
     $startedAt = [datetimeoffset]::Now
 
     $config = Get-ArgusConfig -Path $ConfigPath
@@ -140,6 +147,7 @@ function Invoke-Argus {
     }
 
     $script:ArgusDataCache = @{}
+    $script:ArgusDataSetNotes = @{}
     $results = @(Invoke-ArgusCheckRunner -Check $catalog -Config $config -Environment $environment -Now $startedAt.UtcDateTime @filter)
     $score = Get-ArgusScore -Result $results -Scoring $config.Scoring
     $finishedAt = [datetimeoffset]::Now
