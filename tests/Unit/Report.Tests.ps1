@@ -87,10 +87,10 @@ Describe 'ConvertTo-ArgusHtml' {
 
     It 'caps findings and records the original count' {
         $data = Get-EmbeddedData -Html $script:html
-        $devices = $data.Results | Where-Object Id -EQ 'ARG.ENT.009'
+        $devices = $data.Results | Where-Object Id -EQ 'ARG.ENT.014'
         @($devices.Findings).Count | Should -Be 500
         $devices.FindingsTotal | Should -Be 3000
-        $groups = $data.Results | Where-Object Id -EQ 'ARG.GRP.001'
+        $groups = $data.Results | Where-Object Id -EQ 'ARG.GRP.007'
         @($groups.Findings).Count | Should -Be 11
         $groups.FindingsTotal | Should -Be 11
         ($groups.Findings | Where-Object DisplayName -EQ '<script>alert(1)</script>') | Should -Not -BeNullOrEmpty
@@ -104,7 +104,7 @@ Describe 'ConvertTo-ArgusHtml' {
         $html = InModuleScope ARGUS -Parameters @{ Json = $script:fixtureJson } { ConvertTo-ArgusHtml -Json $Json -MaxFindingsInHtml 0 }
         $data = Get-EmbeddedData -Html $html
         ($data.Results | ForEach-Object { @($_.Findings).Count } | Measure-Object -Sum).Sum | Should -Be 0
-        ($data.Results | Where-Object Id -EQ 'ARG.ENT.009').FindingsTotal | Should -Be 3000
+        ($data.Results | Where-Object Id -EQ 'ARG.ENT.014').FindingsTotal | Should -Be 3000
         $data.Run.MaxFindingsInHtml | Should -Be 0
     }
 
@@ -156,9 +156,9 @@ Describe 'Export-ArgusReport' {
         $content = $script:fixtureJson -replace '"MaxFindingsInHtml": 500', '"MaxFindingsInHtml": 20'
         Set-Content -LiteralPath $json -Value $content -Encoding utf8
         $html = Get-Content -LiteralPath (Export-ArgusReport -InputPath $json -NoBrowser).FullName -Raw
-        @((Get-EmbeddedData -Html $html).Results | Where-Object Id -EQ 'ARG.ENT.009').Findings.Count | Should -Be 20
+        @((Get-EmbeddedData -Html $html).Results | Where-Object Id -EQ 'ARG.ENT.014').Findings.Count | Should -Be 20
         $html = Get-Content -LiteralPath (Export-ArgusReport -InputPath $json -NoBrowser -MaxFindingsInHtml 5).FullName -Raw
-        @((Get-EmbeddedData -Html $html).Results | Where-Object Id -EQ 'ARG.ENT.009').Findings.Count | Should -Be 5
+        @((Get-EmbeddedData -Html $html).Results | Where-Object Id -EQ 'ARG.ENT.014').Findings.Count | Should -Be 5
     }
 
     It 'rejects <Name>' -ForEach @(
@@ -211,7 +211,7 @@ Describe 'Rendered report in a headless browser' -Skip:(-not $script:browser) {
 
         $page = Join-Path $TestDrive 'report.html'
         $null = Export-ArgusReport -InputPath $script:fixture -OutputPath $page -NoBrowser
-        $uri = ([System.Uri]$page).AbsoluteUri + '#ARG.GRP.001'
+        $uri = ([System.Uri]$page).AbsoluteUri + '#ARG.GRP.007'
         # The profile lives outside TestDrive: browser helper processes can keep files locked briefly.
         $script:profileDir = Join-Path ([System.IO.Path]::GetTempPath()) ('argus-browser-' + [guid]::NewGuid().ToString('N'))
         $stdout = Join-Path $TestDrive 'dom.html'
@@ -232,17 +232,17 @@ Describe 'Rendered report in a headless browser' -Skip:(-not $script:browser) {
     }
 
     It 'opens the deep-linked check and renders its findings' {
-        $script:dom | Should -Match '<details class="check" id="ARG\.GRP\.001" open'
+        $script:dom | Should -Match '<details class="check" id="ARG\.GRP\.007" open'
         $script:dom | Should -Match 'Microsoft 365 \(Unified\) groups'
     }
 
     It 'shows a script-tag display name as text, not as an element' {
-        $script:dom | Should -Match '<td>&lt;script&gt;alert\(1\)&lt;/script&gt;</td>'
+        $script:dom | Should -Match '<td[^>]*>&lt;script&gt;alert\(1\)&lt;/script&gt;</td>'
         ([regex]::Matches($script:dom, '(?i)<script')).Count | Should -Be 2
     }
 
     It 'shows an img-onerror display name as text, not as an element' {
-        $script:dom | Should -Match '<td>&lt;img src=x onerror=alert\(2\)&gt;</td>'
+        $script:dom | Should -Match '<td[^>]*>&lt;img src=x onerror=alert\(2\)&gt;</td>'
         $script:dom | Should -Not -Match '(?i)<img[^>]+onerror'
     }
 }
