@@ -39,9 +39,10 @@ function Invoke-LintTask {
     $issues = @(
         Invoke-ScriptAnalyzer -Path $moduleRoot -Recurse -Settings $settings
         Invoke-ScriptAnalyzer -Path (Join-Path $repoRoot 'build') -Recurse -Settings $settings
-        # Fake checks and test scriptblocks declare param($Context) per the check contract without using it.
+        # Tests: fake checks declare param($Context) per the check contract without using it, and
+        # compact positional calls keep data-driven test cases readable.
         Invoke-ScriptAnalyzer -Path (Join-Path $repoRoot 'tests') -Recurse -Settings $settings |
-            Where-Object RuleName -NE 'PSReviewUnusedParameter'
+            Where-Object RuleName -NotIn 'PSReviewUnusedParameter', 'PSAvoidUsingPositionalParameters'
     )
     if ($issues) {
         $issues | Format-Table -AutoSize RuleName, Severity, ScriptName, Line, Message | Out-String -Width 200 |
