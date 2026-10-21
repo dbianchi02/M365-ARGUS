@@ -39,7 +39,10 @@
 ARGUS is a PowerShell module that runs **read-only governance checks** against a Microsoft 365 tenant, computes a weighted **Governance Score** and produces a self-contained **HTML report** (plus JSON and optional CSV) listing every check, what was found and how to fix it.
 
 <p align="center">
-  <img width="1279" alt="ARGUS report: governance score, score by area and the list of checks" src="https://github.com/user-attachments/assets/8c0292d8-c053-4697-8f9e-6f5ccd934080">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/argus-report-dark.png">
+    <img width="900" alt="ARGUS report overview: governance score 95% grade A, score by area, results and priorities (fictitious tenant)" src="docs/assets/argus-report-light.png">
+  </picture>
 </p>
 
 A report generated from fictitious data is attached to every [release](https://github.com/dbianchi02/M365-ARGUS/releases) (`sample-report.html`) and kept in [`samples/`](samples/sample-report.html): download it and open it in a browser.
