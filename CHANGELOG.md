@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Repository scaffolding: module manifest (0.1.0-beta1) and loader, folder layout, build script
+- Repository scaffolding: module manifest (1.0.0-preview1) and loader, folder layout, build script
   (Lint / Test / Docs / Sample / Package), PSScriptAnalyzer settings, CI workflow on Ubuntu and Windows.
 - Public cmdlet stubs with full comment-based help: `Connect-Argus`, `Disconnect-Argus`,
   `Test-ArgusPrerequisite`, `Get-ArgusRequiredPermission`, `Get-ArgusCheck`, `New-ArgusConfig`,

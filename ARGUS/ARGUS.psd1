@@ -1,6 +1,6 @@
 @{
     RootModule           = 'ARGUS.psm1'
-    ModuleVersion        = '0.1.0'
+    ModuleVersion        = '1.0.0'
     CompatiblePSEditions = @('Core')
     GUID                 = '83523a0a-cb5f-477a-8882-199f35fd3f4b'
     Author               = 'Davide Bianchi'
@@ -29,7 +29,7 @@
 
     PrivateData          = @{
         PSData = @{
-            Prerelease   = 'beta1'
+            Prerelease   = 'preview1'
             Tags         = @('M365', 'Microsoft365', 'Governance', 'EntraID', 'SharePoint', 'Teams', 'Exchange', 'Report', 'Graph', 'PSEdition_Core', 'Windows', 'Linux', 'MacOS')
             ProjectUri   = 'https://github.com/dbianchi02/M365-ARGUS'
             LicenseUri   = 'https://github.com/dbianchi02/M365-ARGUS/blob/main/LICENSE'

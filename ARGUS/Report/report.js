@@ -335,7 +335,7 @@
     updateThemeButton();
     document.getElementById('appbar').appendChild(el('div', { class: 'appbar-inner' },
       el('span', { class: 'brand' }, el('span', { class: 'brand-mark' }, icon('eye', 16)), el('span', { class: 'wordmark', text: 'ARGUS' }),
-        // Prerelease builds (version with a suffix, e.g. 0.1.0-beta1) are marked as a preview.
+        // Prerelease builds (version with a suffix, e.g. 1.0.0-preview1) are marked as a preview.
         /-/.test(String(tool.Version || '')) ? el('span', { class: 'preview-badge', title: 'ARGUS ' + tool.Version + ' (preview release)', text: 'Preview' }) : null),
       el('span', { class: 'muted', text: 'Governance report' }),
       el('span', { class: 'appbar-spacer' }),

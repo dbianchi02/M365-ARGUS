@@ -2,7 +2,7 @@
   "SchemaVersion": "1.0",
   "Tool": {
     "Name": "ARGUS",
-    "Version": "0.1.0-beta1",
+    "Version": "1.0.0-preview1",
     "ProjectUri": "https://github.com/dbianchi02/M365-ARGUS"
   },
   "Run": {
@@ -223,11 +223,11 @@
       }
     ],
     "Weights": {
-      "Low": 1,
       "Medium": 3,
-      "Critical": 10,
       "Info": 0,
-      "High": 5
+      "High": 5,
+      "Low": 1,
+      "Critical": 10
     },
     "InvestigateCredit": 0.5,
     "PartialCoverageThreshold": 70.0
@@ -723,8 +723,8 @@
       "ErrorMessage": null,
       "Duration": 0.398,
       "Parameters": {
-        "MaxCount": 4,
-        "MinCount": 2
+        "MinCount": 2,
+        "MaxCount": 4
       },
       "Description": "Counts the distinct holders of the Global Administrator role: active assignments and, with Entra ID P2, eligible (PIM) assignments. Members of role-assignable groups that hold the role are counted individually. Fails when the count is below **2** or above **4**. Global exclusions are not applied: emergency-access accounts must be counted.",
       "Rationale": "Too few Global Administrators risks losing control of the tenant; too many makes the most powerful role hard to govern. Keep two emergency-access accounts plus a small number of named administrators, and delegate the rest to least-privileged roles.",
@@ -26038,7 +26038,6 @@
       "ErrorMessage": null,
       "Duration": 3.15,
       "Parameters": {
-        "FreeSeatThreshold": 10000,
         "IgnoredSkus": [
           "FLOW_FREE",
           "POWER_BI_STANDARD",
@@ -26071,6 +26070,7 @@
           "DEVELOPERPACK",
           "DEVELOPERPACK_E5"
         ],
+        "FreeSeatThreshold": 10000,
         "UnusedSeats": 5,
         "UnusedPercent": 10
       },
@@ -27726,6 +27726,7 @@
       "ErrorMessage": null,
       "Duration": 0.321,
       "Parameters": {
+        "InactiveDays": 180,
         "ExcludedTemplates": [
           "Basic Search Center",
           "Enterprise Search Center",
@@ -27733,8 +27734,7 @@
           "SharePoint Online Tenant Fundamental Site",
           "App Catalog Site",
           "Tenant Admin Site"
-        ],
-        "InactiveDays": 180
+        ]
       },
       "Description": "SharePoint sites whose `Last Activity Date` in the site usage report (`getSharePointSiteUsageDetail`, period D180) is older than **180** days or empty (no activity in the report period). Deleted sites and system sites (`ExcludedTemplates`: search center, compliance policy center, tenant fundamental site, app catalog) are ignored; OneDrive accounts are not part of this report. When the report leaves `Site URL` empty (a known issue of the usage reports), the URL is read from the `Site Id`: first from the PnP tenant site list when SharePoint is connected (it includes private group and channel sites), then with `GET /sites/<id>`, which in delegated mode only reads the sites the account can access; the owner falls back to `Owner Display Name` and is \"Not reported\" when the report has none. With concealed report names, or when the report returns no rows, the result is Investigate.",
       "Rationale": "Inactive sites hold content and permissions that nobody curates, use storage and appear in search. Reviewing them regularly keeps the information architecture clean.",

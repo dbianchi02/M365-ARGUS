@@ -79,7 +79,7 @@ Describe 'Invoke-Argus' {
         $json = Get-Content -LiteralPath $file[0].FullName -Raw | ConvertFrom-Json
         $json.SchemaVersion | Should -Be '1.0'
         $json.Tool.Name | Should -Be 'ARGUS'
-        $json.Tool.Version | Should -Be '0.1.0-beta1'
+        $json.Tool.Version | Should -Be '1.0.0-preview1'
         ($json.Results.Status | Sort-Object -Unique) | Should -Be @('Error', 'Failed', 'Investigate', 'NotRun', 'Passed', 'Skipped')
         $json.Run.Filters.ExcludeId | Should -Be @('ARG.SPO.906')
         $json.Score.Counts.Total | Should -Be $json.Results.Count
