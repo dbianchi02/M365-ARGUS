@@ -1,0 +1,82 @@
+name: Release
+
+# Push a tag that matches the manifest version (for example v1.0.0-preview1) to publish ARGUS to the
+# PowerShell Gallery and create a GitHub release. Run it manually to validate the package without publishing.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build, test and publish
+    runs-on: ubuntu-latest
+    # Protection rules (required reviewers) can be added to this environment in the repository settings.
+    environment: psgallery
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+          Install-Module -Name Pester -MinimumVersion 5.5.0 -Scope CurrentUser -Force -SkipPublisherCheck
+          Install-Module -Name PSScriptAnalyzer -Scope CurrentUser -Force
+          Install-Module -Name Microsoft.Graph.Authentication -MinimumVersion 2.0.0 -Scope CurrentUser -Force
+
+      - name: Read the module version
+        id: version
+        run: |
+          $manifest = Import-PowerShellDataFile -Path ./ARGUS/ARGUS.psd1
+          $prerelease = $manifest.PrivateData.PSData.Prerelease
+          $version = if ($prerelease) { "$($manifest.ModuleVersion)-$prerelease" } else { $manifest.ModuleVersion }
+          if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -ne "v$version") {
+              throw "Tag $env:GITHUB_REF_NAME does not match the manifest version v$version."
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "prerelease=$([bool]$prerelease)".ToLowerInvariant() >> $env:GITHUB_OUTPUT
+
+      - name: Lint, test, docs, sample and package
+        run: ./build/build.ps1 -Task All
+
+      - name: Create the release archive
+        run: Compress-Archive -Path ./output/package/ARGUS -DestinationPath "./output/ARGUS-${{ steps.version.outputs.version }}.zip"
+
+      - name: Validate the package in a local repository
+        run: |
+          $repository = Join-Path $env:RUNNER_TEMP 'psrepo'
+          $null = New-Item -Path $repository -ItemType Directory -Force
+          Register-PSResourceRepository -Name LocalValidation -Uri $repository -Trusted
+          Publish-PSResource -Path ./output/package/ARGUS -Repository LocalValidation -SkipDependenciesCheck
+          Find-PSResource -Name ARGUS -Repository LocalValidation -Prerelease | Format-Table Name, Version, Prerelease
+
+      - name: Publish to the PowerShell Gallery
+        if: github.ref_type == 'tag'
+        env:
+          PSGALLERY_API_KEY: ${{ secrets.PSGALLERY_API_KEY }}
+        run: |
+          if (-not $env:PSGALLERY_API_KEY) { throw 'The PSGALLERY_API_KEY secret is not set.' }
+          Publish-PSResource -Path ./output/package/ARGUS -Repository PSGallery -ApiKey $env:PSGALLERY_API_KEY -Verbose
+
+      - name: Create the GitHub release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $arguments = @($env:GITHUB_REF_NAME, "./output/ARGUS-${{ steps.version.outputs.version }}.zip", './samples/sample-report.html',
+              '--title', "ARGUS ${{ steps.version.outputs.version }}", '--verify-tag',
+              '--notes', "Install with ``Install-Module ARGUS -AllowPrerelease``. See [CHANGELOG.md](CHANGELOG.md) for the changes.")
+          if ('${{ steps.version.outputs.prerelease }}' -eq 'true') { $arguments += '--prerelease' }
+          gh release create @arguments
+
+      - name: Upload the package
+        if: github.ref_type != 'tag'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ARGUS-${{ steps.version.outputs.version }}
+          path: output/ARGUS-${{ steps.version.outputs.version }}.zip

@@ -39,6 +39,15 @@ Each check lives in `ARGUS/Checks/<Area>/ARG.<AREA>.<NNN>.ps1` and needs:
 3. an entry in the generated docs (`./build/build.ps1 -Task Docs`);
 4. an appearance in `samples/sample-report.html` (`./build/build.ps1 -Task Sample`).
 
+## Releasing
+
+1. Set `ModuleVersion` and `PrivateData.PSData.Prerelease` in `ARGUS/ARGUS.psd1` (for example `1.0.0` + `preview2`, or `1.0.0` with an empty prerelease for a stable release) and update the version tests.
+2. Move the `[Unreleased]` entries of `CHANGELOG.md` under the new version, regenerate the sample (`./tests/Fixtures/New-SampleResult.ps1`, then `-Task Sample`) and commit.
+3. Tag the commit with the same version and push the tag: `git tag v1.0.0-preview2; git push origin v1.0.0-preview2`.
+4. The `Release` workflow lints, tests, packages, publishes to the PowerShell Gallery (secret `PSGALLERY_API_KEY`) and creates the GitHub release. It fails if the tag does not match the manifest.
+
+A version published on the Gallery cannot be overwritten: fix forward with a new version. Running the `Release` workflow manually validates the package without publishing.
+
 ## Commits
 
 Use [Conventional Commits](https://www.conventionalcommits.org/), one logical change per commit, for example:
