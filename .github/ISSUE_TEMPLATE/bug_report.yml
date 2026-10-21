@@ -39,7 +39,7 @@ body:
     attributes:
       label: ARGUS version
       description: "`Get-Module ARGUS | Select-Object Version, @{ n = 'Prerelease'; e = { $_.PrivateData.PSData.Prerelease } }`"
-      placeholder: 1.0.0-preview1
+      placeholder: 1.0.0
     validations:
       required: true
   - type: textarea

@@ -320,7 +320,7 @@ Minimal, document-like. Neutral greys, flat surfaces with hairline borders (no s
 - `ci.yml`: on PR/push, PSScriptAnalyzer + Pester on `ubuntu-latest` and `windows-latest`, upload sample report as artifact.
 - `release.yml`: on tag `v*`, build, run tests, `Publish-Module -NuGetApiKey ${{ secrets.PSGALLERY_API_KEY }}`. Prerelease via `PrivateData.PSData.Prerelease = 'beta1'` → version `0.1.0-beta1`.
 - Manifest: `CompatiblePSEditions = 'Core'`, `PowerShellVersion = '7.2'`, `RequiredModules = 'Microsoft.Graph.Authentication'`, tags (`M365`, `Governance`, `EntraID`, `SharePoint`, `Teams`, `Report`, `Graph`), ProjectUri, LicenseUri (MIT), ReleaseNotes.
-- README: what ARGUS is / is not, quick start (`Install-Module ARGUS -AllowPrerelease`, `Connect-Argus`, `Invoke-Argus`), app-registration setup for unattended runs, permission table, check list (generated), screenshot of the sample report, how to write a custom check.
+- README: what ARGUS is / is not, quick start (`Install-Module ARGUS`, `Connect-Argus`, `Invoke-Argus`), app-registration setup for unattended runs, permission table, check list (generated), screenshot of the sample report, how to write a custom check.
 
 ## 12. Out of scope for v0.1 (backlog)
 

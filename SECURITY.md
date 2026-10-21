@@ -7,7 +7,7 @@ the HTML report (for example through a crafted display name or site title).
 ## Supported versions
 
 Only the latest version published on the [PowerShell Gallery](https://www.powershellgallery.com/packages/ARGUS)
-receives fixes. Update with `Update-Module ARGUS -AllowPrerelease` before reporting.
+receives fixes. Update with `Update-Module ARGUS` before reporting.
 
 ## Reporting a vulnerability
 

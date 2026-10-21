@@ -13,10 +13,10 @@
 </p>
 
 <p align="center">
-  <a href="https://www.powershellgallery.com/packages/ARGUS"><img alt="PowerShell Gallery version" src="https://img.shields.io/powershellgallery/v/ARGUS?include_prereleases&amp;logo=powershell&amp;logoColor=white&amp;label=PowerShell%20Gallery"></a>
+  <a href="https://www.powershellgallery.com/packages/ARGUS"><img alt="PowerShell Gallery version" src="https://img.shields.io/powershellgallery/v/ARGUS?logo=powershell&amp;logoColor=white&amp;label=PowerShell%20Gallery"></a>
   <a href="https://www.powershellgallery.com/packages/ARGUS"><img alt="PowerShell Gallery downloads" src="https://img.shields.io/powershellgallery/dt/ARGUS?logo=powershell&amp;logoColor=white&amp;label=downloads"></a>
   <a href="https://github.com/dbianchi02/M365-ARGUS/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/dbianchi02/M365-ARGUS/ci.yml?branch=main&amp;logo=github&amp;label=CI"></a>
-  <a href="https://github.com/dbianchi02/M365-ARGUS/releases"><img alt="Latest release" src="https://img.shields.io/github/v/release/dbianchi02/M365-ARGUS?include_prereleases&amp;sort=semver&amp;logo=github&amp;label=release"></a>
+  <a href="https://github.com/dbianchi02/M365-ARGUS/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/dbianchi02/M365-ARGUS?sort=semver&amp;logo=github&amp;label=release"></a>
   <br>
   <img alt="PowerShell 7.2+" src="https://img.shields.io/badge/PowerShell-7.2%2B-5391FE?logo=powershell&amp;logoColor=white">
   <img alt="Platforms" src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-informational">
@@ -28,13 +28,10 @@
 <p align="center">
   <a href="#quick-start">Quick start</a> ·
   <a href="docs/checks/README.md">Check catalogue</a> ·
-  <a href="https://github.com/dbianchi02/M365-ARGUS/releases">Sample report</a> ·
+  <a href="https://github.com/dbianchi02/M365-ARGUS/releases/latest">Sample report</a> ·
   <a href="CHANGELOG.md">Changelog</a> ·
   <a href="https://github.com/dbianchi02/M365-ARGUS/discussions">Discussions</a>
 </p>
-
-> [!NOTE]
-> **ARGUS 1.0.0 is in preview.** The module is feature complete and has been run against production tenants; check titles, thresholds and the JSON schema may still change before the stable 1.0.0. Install it with `-AllowPrerelease`.
 
 ARGUS is a PowerShell module that runs **read-only governance checks** against a Microsoft 365 tenant, computes a weighted **Governance Score** and produces a self-contained **HTML report** (plus JSON and optional CSV) listing every check, what was found and how to fix it.
 
@@ -76,7 +73,7 @@ Some checks need a licence in the tenant (Entra ID P1/P2 for sign-in activity, M
 ## Installation
 
 ```powershell
-Install-Module ARGUS -AllowPrerelease -Scope CurrentUser
+Install-Module ARGUS -Scope CurrentUser
 # Optional, for the Exchange Online and SharePoint checks
 Install-Module ExchangeOnlineManagement, PnP.PowerShell -Scope CurrentUser
 # Optional, Windows only, for the Copilot self-service purchase check
@@ -199,7 +196,7 @@ Run a single check with details to see what happens: `Invoke-Argus -Id <check id
 ## Updating and uninstalling
 
 ```powershell
-Update-Module ARGUS -AllowPrerelease     # latest version (drop -AllowPrerelease after the stable release)
+Update-Module ARGUS                      # latest version
 Get-InstalledModule ARGUS -AllVersions   # installed versions
 Uninstall-Module ARGUS -AllVersions      # remove ARGUS
 ```
