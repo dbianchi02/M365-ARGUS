@@ -289,6 +289,29 @@ Describe 'Site URL resolution when the usage reports leave it empty' {
         Should -Invoke Invoke-ArgusGraphBatch -ModuleName ARGUS -Times 1 -Exactly -ParameterFilter { @($Request).Count -eq 1 -and $Request[0].Url -eq '/sites/aaaa1111-0000-4000-8000-000000000001?$select=webUrl' }
     }
 
+    It 'reads private group site URLs from the PnP tenant site list before Graph (ARG.SPO.009)' {
+        Mock Invoke-ArgusGraphBatch -ModuleName ARGUS { @([pscustomobject]@{ Id = 'cccc3333-0000-4000-8000-000000000003'; Status = 200; Body = [pscustomobject]@{ webUrl = 'https://contoso.sharepoint.com/sites/public' } }) }
+        $row = { param($Id) [pscustomobject]@{ 'Site Id' = $Id; 'Site URL' = ''; 'Is Deleted' = 'False'; 'Last Activity Date' = '2025-01-01'; 'File Count' = '1'; 'Storage Used (Byte)' = '0'; 'Root Web Template' = 'Group'; 'Owner Principal Name' = 'team@contoso.com' } }
+        $rows = @((& $row 'aaaa1111-0000-4000-8000-000000000001'), (& $row 'cccc3333-0000-4000-8000-000000000003'))
+        $pnp = @([pscustomobject]@{ Url = 'https://contoso.sharepoint.com/sites/private'; SiteId = [guid]'AAAA1111-0000-4000-8000-000000000001'; Template = 'GROUP#0' })
+        $result = Invoke-SiteCheck 'ARG.SPO.009' @{ SharePointSiteUsage = $rows; ReportSettings = $script:visible; SharePointSites = $pnp } @{ Services = @('Graph', 'SharePoint') }
+        ($result.Findings | Where-Object SiteId -EQ 'aaaa1111-0000-4000-8000-000000000001').SiteUrl | Should -Be 'https://contoso.sharepoint.com/sites/private'
+        ($result.Findings | Where-Object SiteId -EQ 'cccc3333-0000-4000-8000-000000000003').SiteUrl | Should -Be 'https://contoso.sharepoint.com/sites/public'
+        Should -Invoke Invoke-ArgusGraphBatch -ModuleName ARGUS -Times 1 -Exactly -ParameterFilter { @($Request).Count -eq 1 -and $Request[0].Id -eq 'cccc3333-0000-4000-8000-000000000003' }
+        $result.Summary | Should -Not -BeLike '*could not be read*'
+    }
+
+    It 'notes the sites whose URL Graph cannot read when PnP is not connected (ARG.SPO.009, ARG.SPO.010)' {
+        Mock Invoke-ArgusGraphBatch -ModuleName ARGUS { @([pscustomobject]@{ Id = 'aaaa1111-0000-4000-8000-000000000001'; Status = 403; Body = $null }) }
+        $row = [pscustomobject]@{ 'Site Id' = 'aaaa1111-0000-4000-8000-000000000001'; 'Site URL' = ''; 'Is Deleted' = 'False'; 'Last Activity Date' = '2025-01-01'; 'File Count' = '1'; 'Storage Used (Byte)' = [string](24GB); 'Storage Allocated (Byte)' = [string](25GB); 'Root Web Template' = 'Group'; 'Owner Principal Name' = 'team@contoso.com' }
+        foreach ($id in 'ARG.SPO.009', 'ARG.SPO.010') {
+            $result = Invoke-SiteCheck $id @{ SharePointSiteUsage = @($row); ReportSettings = $script:visible }
+            $result.Status | Should -Be 'Failed'
+            $result.Findings[0].SiteUrl | Should -BeNullOrEmpty
+            $result.Summary | Should -BeLike '*The URL of 1 site(s) could not be read: private group and channel sites need the SharePoint (PnP) connection.'
+        }
+    }
+
     It 'reads OneDrive URLs from mySite and derives them for deleted users (ARG.SPO.012)' {
         Mock Invoke-ArgusGraphBatch -ModuleName ARGUS { @([pscustomobject]@{ Id = 'id-left'; Status = 200; Body = [pscustomobject]@{ mySite = 'https://contoso-my.sharepoint.com/personal/left_contoso_com/' } }) }
         $row = { param($Upn) [pscustomobject]@{ 'Owner Principal Name' = $Upn; 'Owner Display Name' = $Upn; 'Storage Used (Byte)' = '100'; 'Is Deleted' = 'False'; 'File Count' = '3'; 'Last Activity Date' = '2026-01-01'; 'Site URL' = '' } }

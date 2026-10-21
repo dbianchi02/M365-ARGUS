@@ -152,6 +152,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ARG.SPO.012 and ARG.SPO.013 from the user's `mySite` (or the OneDrive naming convention for deleted
   users, shown in `UrlSource`). ARG.SPO.009 skips system sites (search center, compliance policy center,
   tenant fundamental site, app catalog) and shows "Not reported" when the report has no owner.
+- ARG.SPO.009 and ARG.SPO.010: private group and channel sites, which a delegated `GET /sites/{id}`
+  cannot read when the account is not a member, now get their URL from the PnP tenant site list
+  (`SharePointSites` adds `SiteId`, optional data set). Without PnP the summary counts the sites whose URL
+  could not be read.
 - `Connect-Argus` interactive: `-ClientId` is used only for PnP, so Graph no longer fails when the PnP
   app registration is not set up for Graph sign-in.
 - `Connect-Argus` interactive: Exchange Online connects with `-DisableWAM` (ExchangeOnlineManagement

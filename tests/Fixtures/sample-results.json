@@ -223,11 +223,11 @@
       }
     ],
     "Weights": {
-      "Info": 0,
+      "Low": 1,
       "Medium": 3,
-      "High": 5,
       "Critical": 10,
-      "Low": 1
+      "Info": 0,
+      "High": 5
     },
     "InvestigateCredit": 0.5,
     "PartialCoverageThreshold": 70.0
@@ -343,8 +343,8 @@
           "*break.glass*",
           "*emergency*"
         ],
-        "Accounts": [],
-        "MinCount": 2
+        "MinCount": 2,
+        "Accounts": []
       },
       "Description": "Looks for emergency access accounts: the accounts listed in the Accounts parameter (UPNs or object ids) or, when the list is empty, users whose UPN or display name matches NamePatterns. An account is compliant when it follows the configuration requirements Microsoft documents: enabled, member, cloud-only (not synchronised), UPN on a `*.onmicrosoft.com` domain, and an **active** Global Administrator assignment made directly to the account (not only eligible in PIM, not through a group). Fails when fewer than **2** compliant accounts exist. Authentication methods, Conditional Access exclusions and sign-in alerting are part of the same guidance but are security controls outside the scope of ARGUS: verify them separately. Global exclusions are not applied.",
       "Rationale": "Emergency access accounts prevent the organisation from being locked out of its tenant when federation, MFA or the usual administrators are unavailable. Microsoft recommends two or more, cloud-only, with a permanent active Global Administrator assignment.",
@@ -723,8 +723,8 @@
       "ErrorMessage": null,
       "Duration": 0.398,
       "Parameters": {
-        "MinCount": 2,
-        "MaxCount": 4
+        "MaxCount": 4,
+        "MinCount": 2
       },
       "Description": "Counts the distinct holders of the Global Administrator role: active assignments and, with Entra ID P2, eligible (PIM) assignments. Members of role-assignable groups that hold the role are counted individually. Fails when the count is below **2** or above **4**. Global exclusions are not applied: emergency-access accounts must be counted.",
       "Rationale": "Too few Global Administrators risks losing control of the tenant; too many makes the most powerful role hard to govern. Keep two emergency-access accounts plus a small number of named administrators, and delegate the rest to least-privileged roles.",
@@ -26038,9 +26038,7 @@
       "ErrorMessage": null,
       "Duration": 3.15,
       "Parameters": {
-        "UnusedPercent": 10,
         "FreeSeatThreshold": 10000,
-        "UnusedSeats": 5,
         "IgnoredSkus": [
           "FLOW_FREE",
           "POWER_BI_STANDARD",
@@ -26072,7 +26070,9 @@
           "SMB_APPS",
           "DEVELOPERPACK",
           "DEVELOPERPACK_E5"
-        ]
+        ],
+        "UnusedSeats": 5,
+        "UnusedPercent": 10
       },
       "Description": "Compares purchased seats (`prepaidUnits.enabled`) with assigned seats (`consumedUnits`) for every active, user-assignable SKU (`capabilityStatus` = Enabled, `appliesTo` = User). A SKU fails when more than **10%** or more than **5** seats are unused. Free, viral and developer SKUs (the IgnoredSkus list), SKUs with **10,000** or more seats (free offers are provisioned with very large quantities) and trial SKUs (`isTrial` in `/directory/subscriptions`) are ignored.",
       "Rationale": "Unused seats are a recurring cost with no business value. Reviewing them before each renewal is the simplest licence saving.",
@@ -26422,6 +26422,7 @@
       "ErrorMessage": null,
       "Duration": 2.225,
       "Parameters": {
+        "FreeSeatThreshold": 10000,
         "IgnoredSkus": [
           "FLOW_FREE",
           "POWER_BI_STANDARD",
@@ -26453,8 +26454,7 @@
           "SMB_APPS",
           "DEVELOPERPACK",
           "DEVELOPERPACK_E5"
-        ],
-        "FreeSeatThreshold": 10000
+        ]
       },
       "Description": "Users with at least one paid licence assigned directly (`licenseAssignmentStates` entry without `assignedByGroup`) instead of through group-based licensing. Free, viral and developer SKUs (the IgnoredSkus list), SKUs with **10,000** or more seats and trial SKUs (`isTrial` in `/directory/subscriptions`) are not counted: they are usually self-service sign-ups. AlsoFromGroup lists the direct licences the user also receives from a group, where the direct assignment is redundant.",
       "Rationale": "Direct assignments are not driven by group membership: they are not removed when a person changes role or leaves, and they are hard to audit at scale. Group-based licensing keeps paid licences consistent with joiner/mover/leaver processes.",
@@ -27726,7 +27726,6 @@
       "ErrorMessage": null,
       "Duration": 0.321,
       "Parameters": {
-        "InactiveDays": 180,
         "ExcludedTemplates": [
           "Basic Search Center",
           "Enterprise Search Center",
@@ -27734,9 +27733,10 @@
           "SharePoint Online Tenant Fundamental Site",
           "App Catalog Site",
           "Tenant Admin Site"
-        ]
+        ],
+        "InactiveDays": 180
       },
-      "Description": "SharePoint sites whose `Last Activity Date` in the site usage report (`getSharePointSiteUsageDetail`, period D180) is older than **180** days or empty (no activity in the report period). Deleted sites and system sites (`ExcludedTemplates`: search center, compliance policy center, tenant fundamental site, app catalog) are ignored; OneDrive accounts are not part of this report. When the report leaves `Site URL` empty (a known issue of the usage reports), the URL is read from the `Site Id` (`GET /sites/<id>`); the owner falls back to `Owner Display Name` and is \"Not reported\" when the report has none. With concealed report names, or when the report returns no rows, the result is Investigate.",
+      "Description": "SharePoint sites whose `Last Activity Date` in the site usage report (`getSharePointSiteUsageDetail`, period D180) is older than **180** days or empty (no activity in the report period). Deleted sites and system sites (`ExcludedTemplates`: search center, compliance policy center, tenant fundamental site, app catalog) are ignored; OneDrive accounts are not part of this report. When the report leaves `Site URL` empty (a known issue of the usage reports), the URL is read from the `Site Id`: first from the PnP tenant site list when SharePoint is connected (it includes private group and channel sites), then with `GET /sites/<id>`, which in delegated mode only reads the sites the account can access; the owner falls back to `Owner Display Name` and is \"Not reported\" when the report has none. With concealed report names, or when the report returns no rows, the result is Investigate.",
       "Rationale": "Inactive sites hold content and permissions that nobody curates, use storage and appear in search. Reviewing them regularly keeps the information architecture clean.",
       "Remediation": {
         "Steps": "1. Contact the site owners and confirm whether each site is still needed.\n2. Archive (Microsoft 365 Archive) or set to read-only the sites whose content must be kept, delete the others after your retention period.\n3. Consider a site lifecycle policy for inactive sites (SharePoint Advanced Management).",
@@ -27766,7 +27766,9 @@
           "SharePointSiteUsage",
           "ReportSettings"
         ],
-        "OptionalDataSets": []
+        "OptionalDataSets": [
+          "SharePointSites"
+        ]
       },
       "Tags": [
         "SharePoint",
@@ -27866,7 +27868,7 @@
       "Parameters": {
         "QuotaPercent": 90
       },
-      "Description": "SharePoint sites whose used storage is more than **90%** of the allocated storage, from the site usage report (`Storage Used (Byte)` / `Storage Allocated (Byte)`, period D180). Deleted sites and sites without an allocation are ignored. With concealed report names, or when the report returns no rows, the result is Investigate. When the report leaves `Site URL` empty (a known issue of the usage reports), the URL is read from the `Site Id` (`GET /sites/<id>`).",
+      "Description": "SharePoint sites whose used storage is more than **90%** of the allocated storage, from the site usage report (`Storage Used (Byte)` / `Storage Allocated (Byte)`, period D180). Deleted sites and sites without an allocation are ignored. With concealed report names, or when the report returns no rows, the result is Investigate. When the report leaves `Site URL` empty (a known issue of the usage reports), the URL is read from the `Site Id`: first from the PnP tenant site list when SharePoint is connected (it includes private group and channel sites), then with `GET /sites/<id>`, which in delegated mode only reads the sites the account can access.",
       "Rationale": "A site that reaches its quota becomes read-only for new content, which interrupts work. Planning quota increases or clean-up in advance avoids that.",
       "Remediation": {
         "Steps": "1. Review large libraries, old versions and the recycle bin of each site.\n2. Clean up or archive content that is no longer needed, or reduce the number of kept versions.\n3. Increase the site storage limit if the content is needed and tenant storage allows it.",
@@ -27896,7 +27898,9 @@
           "SharePointSiteUsage",
           "ReportSettings"
         ],
-        "OptionalDataSets": []
+        "OptionalDataSets": [
+          "SharePointSites"
+        ]
       },
       "Tags": [
         "SharePoint",
@@ -30253,6 +30257,7 @@
       "ErrorMessage": null,
       "Duration": 0.536,
       "Parameters": {
+        "FreeSeatThreshold": 10000,
         "IgnoredSkus": [
           "FLOW_FREE",
           "POWER_BI_STANDARD",
@@ -30284,8 +30289,7 @@
           "SMB_APPS",
           "DEVELOPERPACK",
           "DEVELOPERPACK_E5"
-        ],
-        "FreeSeatThreshold": 10000
+        ]
       },
       "Description": "Guest users (`userType` = Guest) with at least one paid licence. Free, viral and trial SKUs are ignored (`IgnoredSkus`, trial subscriptions from `/directory/subscriptions`), as in ARG.LIC.006. Guests normally work with the licences of their home organisation or with the B2B allowance; a paid seat on a guest is usually a mistake or a leftover.",
       "Rationale": "Licences assigned to guests cost a full seat, are rarely reviewed and often stay after the collaboration ends. When a guest really needs a licence, it should be a documented decision with a sponsor, not the side effect of a group-based assignment.",
@@ -30395,6 +30399,7 @@
       "ErrorMessage": null,
       "Duration": 0.891,
       "Parameters": {
+        "FreeSeatThreshold": 10000,
         "IgnoredSkus": [
           "FLOW_FREE",
           "POWER_BI_STANDARD",
@@ -30426,8 +30431,7 @@
           "SMB_APPS",
           "DEVELOPERPACK",
           "DEVELOPERPACK_E5"
-        ],
-        "FreeSeatThreshold": 10000
+        ]
       },
       "Description": "Users with two paid SKUs where every service plan of one SKU is also in the other (from `subscribedSkus.servicePlans`), typically a standalone product or an older suite next to the suite that includes it. The contained SKU is redundant. The comparison uses service plan IDs, so it needs no list of SKU names; free, viral and trial SKUs are ignored as in ARG.LIC.006.",
       "Rationale": "Overlapping licences usually come from upgrades where the old SKU was never removed, or from two licensing groups that both include the user. The contained seat is paid twice and blocks a seat that could go to someone else.",

@@ -280,10 +280,10 @@ function Get-ArgusDataSetDefinition {
             Endpoint    = 'Get-PnPTenantSite (PnP.PowerShell)'
             Permissions = @()
             Roles       = @('SharePoint Administrator', 'Global Reader')
-            Notes       = 'Site collections without OneDrive: Url, Template, Owner (primary site collection administrator), GroupId (empty GUID for sites without a Microsoft 365 group).'
+            Notes       = 'Site collections without OneDrive: Url, SiteId (resolves empty report URLs), Template, Owner (primary site collection administrator), GroupId (empty GUID for sites without a Microsoft 365 group).'
             Loader      = {
                 $sites = Get-PnPTenantSite -ErrorAction Stop |
-                    Select-Object Url, Title, Template, Owner, GroupId, LastContentModifiedDate, LockState, SharingCapability, SensitivityLabel
+                    Select-Object Url, SiteId, Title, Template, Owner, GroupId, LastContentModifiedDate, LockState, SharingCapability, SensitivityLabel
                 Write-Output -InputObject @($sites) -NoEnumerate
             }
         }

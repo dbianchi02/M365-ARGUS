@@ -4,7 +4,7 @@ Register-ArgusCheck @{
     Area        = 'SharePoint'
     Category    = 'Lifecycle'
     Severity    = 'Low'
-    Description = 'SharePoint sites whose `Last Activity Date` in the site usage report (`getSharePointSiteUsageDetail`, period D180) is older than **{InactiveDays}** days or empty (no activity in the report period). Deleted sites and system sites (`ExcludedTemplates`: search center, compliance policy center, tenant fundamental site, app catalog) are ignored; OneDrive accounts are not part of this report. When the report leaves `Site URL` empty (a known issue of the usage reports), the URL is read from the `Site Id` (`GET /sites/<id>`); the owner falls back to `Owner Display Name` and is "Not reported" when the report has none. With concealed report names, or when the report returns no rows, the result is Investigate.'
+    Description = 'SharePoint sites whose `Last Activity Date` in the site usage report (`getSharePointSiteUsageDetail`, period D180) is older than **{InactiveDays}** days or empty (no activity in the report period). Deleted sites and system sites (`ExcludedTemplates`: search center, compliance policy center, tenant fundamental site, app catalog) are ignored; OneDrive accounts are not part of this report. When the report leaves `Site URL` empty (a known issue of the usage reports), the URL is read from the `Site Id`: first from the PnP tenant site list when SharePoint is connected (it includes private group and channel sites), then with `GET /sites/<id>`, which in delegated mode only reads the sites the account can access; the owner falls back to `Owner Display Name` and is "Not reported" when the report has none. With concealed report names, or when the report returns no rows, the result is Investigate.'
     Rationale   = 'Inactive sites hold content and permissions that nobody curates, use storage and appear in search. Reviewing them regularly keeps the information architecture clean.'
     Remediation = @{
         Steps      = "1. Contact the site owners and confirm whether each site is still needed.`n2. Archive (Microsoft 365 Archive) or set to read-only the sites whose content must be kept, delete the others after your retention period.`n3. Consider a site lifecycle policy for inactive sites (SharePoint Advanced Management)."
@@ -15,9 +15,10 @@ Register-ArgusCheck @{
         @{ Title = 'Manage site lifecycle policies'; Url = 'https://learn.microsoft.com/en-us/sharepoint/site-lifecycle-management' }
     )
     Requires    = @{
-        Services    = @('Graph')
-        GraphScopes = @('Reports.Read.All', 'Sites.Read.All')
-        DataSets    = @('SharePointSiteUsage', 'ReportSettings')
+        Services         = @('Graph')
+        GraphScopes      = @('Reports.Read.All', 'Sites.Read.All')
+        DataSets         = @('SharePointSiteUsage', 'ReportSettings')
+        OptionalDataSets = @('SharePointSites')
     }
     Parameters  = @{
         InactiveDays      = 180
@@ -40,7 +41,7 @@ Register-ArgusCheck @{
             })
         # The report can return an empty Site URL (advisory SP676147): resolve it from the Site Id.
         $missing = @($inactive | Where-Object { -not (Get-ArgusProperty $_ 'Site URL' '') } | ForEach-Object { [string](Get-ArgusProperty $_ 'Site Id' '') })
-        $urls = if ($missing.Count -gt 0) { Resolve-ArgusSiteUrl -SiteId $missing } else { @{} }
+        $urls = if ($missing.Count -gt 0) { Resolve-ArgusSiteUrl -SiteId $missing -TenantSite $Context.Data['SharePointSites'] } else { @{} }
         $findings = @($inactive | ForEach-Object {
                 $last = ConvertTo-ArgusUtcDate (Get-ArgusProperty $_ 'Last Activity Date' '')
                 $url = [string](Get-ArgusProperty $_ 'Site URL' '')
@@ -59,8 +60,10 @@ Register-ArgusCheck @{
                     SiteId        = $siteId
                 }
             } | Sort-Object @{ Expression = { if ($null -eq $_.DaysInactive) { [int]::MaxValue } else { $_.DaysInactive } }; Descending = $true }, SiteUrl)
+        $unresolved = @($findings | Where-Object { -not $_.SiteUrl }).Count
+        $note = if ($unresolved -gt 0 -and -not $Context.Data['SharePointSites']) { " The URL of $unresolved site(s) could not be read: private group and channel sites need the SharePoint (PnP) connection." } else { '' }
         $status = if ($findings.Count -gt 0) { 'Failed' } else { 'Passed' }
         New-ArgusResult -Status $status -Findings $findings -EvaluatedCount $rows.Count `
-            -Summary '{AffectedCount} of {EvaluatedCount} SharePoint sites have had no activity for {InactiveDays}+ days.'
+            -Summary ('{AffectedCount} of {EvaluatedCount} SharePoint sites have had no activity for {InactiveDays}+ days.' + $note)
     }
 }
