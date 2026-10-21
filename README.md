@@ -77,37 +77,100 @@ Some checks need a licence in the tenant (Entra ID P1/P2 for sign-in activity, M
 
 ```powershell
 Install-Module ARGUS -AllowPrerelease -Scope CurrentUser
-# Optional modules
+# Optional, for the Exchange Online and SharePoint checks
 Install-Module ExchangeOnlineManagement, PnP.PowerShell -Scope CurrentUser
+# Optional, Windows only, for the Copilot self-service purchase check
+Install-Module MSCommerce -Scope CurrentUser
 ```
 
 ## Quick start
 
 ```powershell
-Connect-Argus                     # Graph only, interactive sign-in in the browser
-Invoke-Argus                      # runs every check, writes HTML + JSON to ./output and opens the report
+Connect-Argus -Service All -ClientId <PnP app client id>   # see "First run, step by step" for the client id
+Invoke-Argus                                               # runs every check, writes HTML + JSON to ./output and opens the report
 ```
 
-To include Exchange Online, SharePoint (PnP) and, on Windows, the Commerce policies:
+Without `-Service All -ClientId` ARGUS connects Microsoft Graph only: the Exchange Online and SharePoint (PnP) checks are then reported as Skipped.
+
+## First run, step by step
+
+The steps below are the path ARGUS has been validated on: an interactive run signed in as a **Global Administrator**. Steps 1 and 2 are done once per tenant.
+
+### 1. Show real names in the usage reports
+
+Inactivity and storage checks read the Microsoft 365 usage reports. If the tenant conceals names in them, those checks return **To review** and the report shows a banner, because hashed names cannot be matched.
+
+In the [Microsoft 365 admin center](https://admin.microsoft.com) go to **Settings › Org settings › Services › Reports** and clear **Display concealed user, group, and site names in all reports**. The change can take a few minutes to apply; you can turn it back on after the assessment.
+
+### 2. Create the app registration for PnP.PowerShell
+
+PnP.PowerShell needs an Entra ID app registration of your own for interactive sign-in (Graph and Exchange Online use Microsoft's apps and need nothing). Create it once with PnP itself, signed in as a Global Administrator:
 
 ```powershell
-Connect-Argus -Service All -ClientId <PnP app registration client id>
+Register-PnPEntraIDAppForInteractiveLogin -ApplicationName 'ARGUS PnP' -Tenant contoso.onmicrosoft.com
+```
+
+A browser window asks you to sign in and to consent; at the end the cmdlet shows the app's **client ID** (also visible in Entra ID › App registrations). That is the value for `-ClientId`.
+
+> [!NOTE]
+> With no permission parameters PnP grants its default delegated permissions (`AllSites.FullControl`, `Group.ReadWrite.All`, `User.ReadWrite.All`, `TermStore.ReadWrite.All`). ARGUS only calls read cmdlets (`Get-PnPTenantSite`, `Get-PnPTenant`) and delegated access is always limited by the roles of the signed-in user, but you may prefer a narrower app. A read-oriented registration such as `-SharePointDelegatePermissions AllSites.Read -GraphDelegatePermissions Group.Read.All` has not been validated with ARGUS yet: if you try it, please share the result in [Discussions](https://github.com/dbianchi02/M365-ARGUS/discussions).
+
+### 3. Connect
+
+```powershell
+Connect-Argus -Service All -ClientId <client id from step 2>
+```
+
+You sign in up to four times, once per service: Microsoft Graph, Exchange Online, SharePoint (PnP) and, on Windows, Commerce.
+
+The first time in a tenant, Microsoft Graph shows a consent prompt for **Microsoft Graph Command Line Tools** listing the read-only permissions ARGUS needs. Tick **Consent on behalf of your organization** and accept. Admin consent can be granted by a Global Administrator, Application Administrator or Cloud Application Administrator.
+
+### 4. Check what will run
+
+```powershell
+Test-ArgusPrerequisite
+```
+
+It lists missing modules, connections, permissions and licences, and which checks would be skipped and why.
+
+### 5. Run the assessment
+
+```powershell
 Invoke-Argus
 ```
 
-Before the first run, `Test-ArgusPrerequisite` lists the missing modules, connections, scopes and licences, and which checks would be skipped.
+A tenant with a few hundred users takes one to two minutes. When the run ends, the HTML report opens in your browser (`-NoBrowser` to skip it). Close the sessions with `Disconnect-Argus` when you are done.
 
-### Interactive sign-in and roles
+### Output files
 
-- The first time ARGUS is used in a tenant, sign in with an account that can grant **tenant-wide admin consent** for delegated Microsoft Graph permissions (Application Administrator, Cloud Application Administrator or Global Administrator) and accept *Consent on behalf of your organization*. Only read scopes are requested.
-- With delegated access ARGUS sees only what the signed-in user can read: **Global Reader + Reports Reader** is the recommended combination.
-- Graph and Exchange Online sign in with their own Microsoft apps. `-ClientId` is used only for PnP.PowerShell, which requires an app registration of your own (see [PnP: register an Entra ID application](https://pnp.github.io/powershell/articles/registerapplication.html)).
+Every run writes to `./output` (or the folder given with `-OutputPath`, created if missing):
 
-### Usage reports with concealed names
+| File | Content |
+|---|---|
+| `ARGUS-Report-<tenant>-<yyyyMMdd-HHmm>.html` | The report: one self-contained file (styles and scripts included), ready to share or print to PDF. |
+| `ARGUS-Report-<tenant>-<yyyyMMdd-HHmm>.json` | All results, for automation, comparisons over time, or `Export-ArgusReport` to re-render the HTML. |
+| `ARGUS-Report-<tenant>-<yyyyMMdd-HHmm>-<check id>.csv` | Only with `-OutputFormat Html, Json, Csv`: the findings of each failed check. |
 
-If *Display concealed user, group, and site names in all reports* is on (Microsoft 365 admin center > Settings > Org settings > Reports), usage reports return hashed names. The checks based on them (inactive sites, Teams, mailboxes, OneDrive, Copilot licences) then return **To review** instead of wrong data, and the report shows a banner. Turn the setting off for the duration of the assessment to get those results.
+An existing folder is reused and earlier reports are kept, so you build a history per tenant. Remediation scripts are sample code inside the report, never separate files and never executed.
 
-### Common options
+> [!IMPORTANT]
+> Reports contain tenant data (user names, groups, sites). Store and share them like any other confidential customer document.
+
+### Roles and least privilege
+
+All runs so far used a **Global Administrator**, which covers every check. For a least-privilege account:
+
+| Area | Role needed (delegated) |
+|---|---|
+| Entra ID, applications, licensing, groups, tenant settings | Global Reader |
+| Usage reports (inactive sites, Teams, mailboxes, OneDrive, Copilot licences) | Reports Reader (or Global Reader) |
+| Exchange Online | Global Reader, or the View-Only Organization Management role group |
+| SharePoint (PnP) | SharePoint Administrator or Global Reader |
+| Copilot web search policy, agent catalogue (ARG.COP.006, 011, 012) | AI Administrator |
+| Copilot enhanced personalization (ARG.COP.007) | Global Administrator |
+
+Checks whose data the account cannot read are reported as **Skipped** with the reason; they never stop the run. `Get-ArgusRequiredPermission -Id <check id>` shows what a single check needs.
+## Common options
 
 ```powershell
 Invoke-Argus -Area EntraID, Licensing                     # only some areas
@@ -119,7 +182,33 @@ $result = Invoke-Argus -PassThru -NoBrowser -NoBanner     # results object for s
 Export-ArgusReport -InputPath ./output/ARGUS-Report-contoso-20261021-1144.json   # re-render the HTML from JSON
 ```
 
+## Troubleshooting
+
+| Symptom | Cause and fix |
+|---|---|
+| Inactivity checks show **To review** and a banner about concealed names | Usage reports conceal names: see [step 1](#1-show-real-names-in-the-usage-reports). |
+| Warning *SharePoint (PnP) was not connected* | `-ClientId` is missing or wrong, PnP.PowerShell is not installed, or the admin URL could not be derived (pass `-SharePointAdminUrl https://contoso-admin.sharepoint.com`). The SharePoint checks that need PnP are then Skipped or partial. |
+| Exchange Online sign-in fails or hangs | Update ExchangeOnlineManagement to 3.7.2 or later; ARGUS signs in through the browser (`-DisableWAM`) to avoid the WAM error in PowerShell 7 terminals. |
+| ARG.COP.001 is Skipped | The Commerce connection (MSCommerce) is available only for interactive sign-in on Windows. |
+| A check is Skipped for a missing licence | The tenant has no licence for that feature (for example Entra ID P1 for sign-in activity, Microsoft 365 Copilot): expected. |
+| A check is Skipped for a missing role or permission | The signed-in account cannot read that data: see [Roles and least privilege](#roles-and-least-privilege). |
+| Some site URLs are empty in ARG.SPO.009 or ARG.SPO.010 | Private group and channel sites can be read only through PnP: connect SharePoint (`-Service All -ClientId`). |
+
+Run a single check with details to see what happens: `Invoke-Argus -Id <check id> -Verbose`. Still stuck? Ask in [Discussions › Q&A](https://github.com/dbianchi02/M365-ARGUS/discussions/categories/q-a).
+
+## Updating and uninstalling
+
+```powershell
+Update-Module ARGUS -AllowPrerelease     # latest version (drop -AllowPrerelease after the stable release)
+Get-InstalledModule ARGUS -AllVersions   # installed versions
+Uninstall-Module ARGUS -AllVersions      # remove ARGUS
+```
+
+Reports in `./output` are not touched by updates or uninstall.
 ## Unattended runs (app-only)
+
+> [!WARNING]
+> App-only sign-in (certificate or managed identity) is implemented but has not been validated on a production tenant during the preview. Interactive runs are the supported path for now.
 
 ```powershell
 # Certificate
