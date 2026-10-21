@@ -211,7 +211,8 @@ Describe 'Rendered report in a headless browser' -Skip:(-not $script:browser) {
 
         $page = Join-Path $TestDrive 'report.html'
         $null = Export-ArgusReport -InputPath $script:fixture -OutputPath $page -NoBrowser
-        $uri = ([System.Uri]$page).AbsoluteUri + '#ARG.GRP.007'
+        # An explicit UriKind: the [System.Uri] cast makes a relative URI of a Unix path (empty AbsoluteUri).
+        $uri = [System.Uri]::new($page, [System.UriKind]::Absolute).AbsoluteUri + '#ARG.GRP.007'
         # The profile lives outside TestDrive: browser helper processes can keep files locked briefly.
         $script:profileDir = Join-Path ([System.IO.Path]::GetTempPath()) ('argus-browser-' + [guid]::NewGuid().ToString('N'))
         $stdout = Join-Path $TestDrive 'dom.html'
@@ -229,6 +230,9 @@ Describe 'Rendered report in a headless browser' -Skip:(-not $script:browser) {
             $arguments += @('--no-sandbox', "--user-data-dir=$script:profileDir", $uri)
             $script:dom = & $script:browserPath @arguments 2> (Join-Path $TestDrive 'browser.log') | Out-String
         }
+        $script:browserInfo = "URI: $uri
+Browser log:
+" + (Get-Content -LiteralPath (Join-Path $TestDrive 'browser.log') -Raw -ErrorAction SilentlyContinue)
     }
 
     AfterAll {
@@ -236,7 +240,7 @@ Describe 'Rendered report in a headless browser' -Skip:(-not $script:browser) {
     }
 
     It 'renders the page' {
-        $script:dom | Should -Match 'class="appbar-inner"'
+        $script:dom | Should -Match 'class="appbar-inner"' -Because $script:browserInfo
         $script:dom | Should -Match 'Contoso Ltd \(fictitious\)'
     }
 
