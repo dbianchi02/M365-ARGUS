@@ -35,10 +35,10 @@ Describe 'ARGUS module' {
         $manifest.CompatiblePSEditions | Should -Be @('Core')
     }
 
-    It 'is version 1.0.0 with prerelease tag preview1' {
+    It 'is version 1.0.0 without a prerelease tag' {
         $manifest = Import-PowerShellDataFile -Path $script:manifestPath
         $manifest.ModuleVersion | Should -Be '1.0.0'
-        $manifest.PrivateData.PSData.Prerelease | Should -Be 'preview1'
+        $manifest.PrivateData.PSData.Prerelease | Should -BeNullOrEmpty
     }
 
     It 'requires only Microsoft.Graph.Authentication' {

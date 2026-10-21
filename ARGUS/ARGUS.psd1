@@ -29,7 +29,7 @@
 
     PrivateData          = @{
         PSData = @{
-            Prerelease   = 'preview1'
+            Prerelease   = ''
             Tags         = @('M365', 'Microsoft365', 'Governance', 'EntraID', 'SharePoint', 'Teams', 'Exchange', 'Report', 'Graph', 'PSEdition_Core', 'Windows', 'Linux', 'MacOS')
             ProjectUri   = 'https://github.com/dbianchi02/M365-ARGUS'
             LicenseUri   = 'https://github.com/dbianchi02/M365-ARGUS/blob/main/LICENSE'

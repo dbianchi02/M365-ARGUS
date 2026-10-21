@@ -68,10 +68,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          $prerelease = '${{ steps.version.outputs.prerelease }}' -eq 'true'
+          $install = if ($prerelease) { 'Install-Module ARGUS -AllowPrerelease' } else { 'Install-Module ARGUS' }
           $arguments = @($env:GITHUB_REF_NAME, "./output/ARGUS-${{ steps.version.outputs.version }}.zip", './samples/sample-report.html',
               '--title', "ARGUS ${{ steps.version.outputs.version }}", '--verify-tag',
-              '--notes', "Install with ``Install-Module ARGUS -AllowPrerelease``. See [CHANGELOG.md](CHANGELOG.md) for the changes.")
-          if ('${{ steps.version.outputs.prerelease }}' -eq 'true') { $arguments += '--prerelease' }
+              '--notes', "Install with ``$install``. See [CHANGELOG.md](CHANGELOG.md) for the changes.")
+          if ($prerelease) { $arguments += '--prerelease' }
           gh release create @arguments
 
       - name: Upload the package

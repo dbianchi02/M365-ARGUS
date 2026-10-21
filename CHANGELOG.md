@@ -7,9 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-21
+
+First stable release: 73 read-only governance checks, Governance Score and HTML / JSON / CSV reports,
+validated with interactive runs on production tenants. It supersedes 1.0.0-preview1, published earlier the
+same day with the same features.
+
+### Known limitations
+
+- App-only sign-in (certificate, managed identity) is implemented but not yet validated on a production tenant.
+- ARG.COP.009 reads a Microsoft Graph beta property (`allowedToCreateAgentIdentityBlueprints`) that is not yet
+  documented on Microsoft Learn; it is Skipped when the tenant does not return it.
+- A read-only PnP app registration (narrower than the PnP defaults) has not been validated yet.
+
 ### Added
 
-- Repository scaffolding: module manifest (1.0.0-preview1) and loader, folder layout, build script
+- Repository scaffolding: module manifest and loader, folder layout, build script
   (Lint / Test / Docs / Sample / Package), PSScriptAnalyzer settings, CI workflow on Ubuntu and Windows.
 - Public cmdlet stubs with full comment-based help: `Connect-Argus`, `Disconnect-Argus`,
   `Test-ArgusPrerequisite`, `Get-ArgusRequiredPermission`, `Get-ArgusCheck`, `New-ArgusConfig`,
