@@ -215,11 +215,20 @@ Describe 'Rendered report in a headless browser' -Skip:(-not $script:browser) {
         # The profile lives outside TestDrive: browser helper processes can keep files locked briefly.
         $script:profileDir = Join-Path ([System.IO.Path]::GetTempPath()) ('argus-browser-' + [guid]::NewGuid().ToString('N'))
         $stdout = Join-Path $TestDrive 'dom.html'
-        $arguments = @('--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check', "--user-data-dir=`"$script:profileDir`"", '--dump-dom', $uri)
-        if (-not $IsWindows) { $arguments = @('--no-sandbox') + $arguments }
-        $null = Start-Process -FilePath $script:browserPath -ArgumentList $arguments -RedirectStandardOutput $stdout `
-            -RedirectStandardError (Join-Path $TestDrive 'browser.log') -Wait -PassThru -NoNewWindow
-        $script:dom = Get-Content -LiteralPath $stdout -Raw
+        $arguments = @('--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check', '--dump-dom')
+        if ($IsWindows) {
+            # Start-Process joins the arguments into one command line: quote the profile path.
+            $arguments += @("--user-data-dir=`"$script:profileDir`"", $uri)
+            $null = Start-Process -FilePath $script:browserPath -ArgumentList $arguments -RedirectStandardOutput $stdout `
+                -RedirectStandardError (Join-Path $TestDrive 'browser.log') -Wait -PassThru -NoNewWindow
+            $script:dom = Get-Content -LiteralPath $stdout -Raw
+        }
+        else {
+            # Native invocation passes every argument unchanged; Start-Process re-parses the joined command line
+            # on Linux and the browser opened a New Tab page instead of the report.
+            $arguments += @('--no-sandbox', "--user-data-dir=$script:profileDir", $uri)
+            $script:dom = & $script:browserPath @arguments 2> (Join-Path $TestDrive 'browser.log') | Out-String
+        }
     }
 
     AfterAll {
