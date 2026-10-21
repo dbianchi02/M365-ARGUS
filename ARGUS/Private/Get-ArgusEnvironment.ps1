@@ -5,7 +5,7 @@ function Get-ArgusEnvironment {
 
     .DESCRIPTION
         Used by the runner to decide which checks are Skipped. A property that is $null means "unknown":
-        the runner then does not skip on that dimension (for example GrantedScopes before Phase 4).
+        the runner then does not skip on that dimension (for example GrantedScopes when they cannot be read).
         Populated from the state written by Connect-Argus; without a connection only defaults are returned.
     #>
     [CmdletBinding()]

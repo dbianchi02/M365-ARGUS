@@ -81,7 +81,7 @@ $script:ArgusExclusionColumns = [ordered]@{
 # Per-session state
 # ---------------------------------------------------------------------------
 $script:ArgusRegistrationTarget = $null   # List used by Register-ArgusCheck during Import-ArgusCheck
-$script:ArgusConnection = $null           # set by Connect-Argus (Phase 4)
+$script:ArgusConnection = $null           # set by Connect-Argus
 $script:ArgusDataCache = @{}              # per-run data set cache (Get-ArgusData)
 $script:ArgusDataSetLoaders = @{}         # data set name -> scriptblock (registered below)
 $script:ArgusDataSetNotes = @{}           # data set name -> notes recorded while loading (e.g. signInActivity omitted)

@@ -12,7 +12,7 @@ function Invoke-ArgusCheckRunner {
         4. the Test scriptblock runs isolated in try/catch -> Error with the message on exception;
         5. global exclusions are removed from the findings (unless ApplyExclusions = $false), counts are
            adjusted, and placeholders in Title / Summary are resolved.
-        Checks run sequentially (v0.1).
+        Checks run sequentially.
     #>
     [CmdletBinding()]
     [OutputType([pscustomobject])]

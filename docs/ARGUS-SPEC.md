@@ -1,4 +1,4 @@
-# ARGUS — Technical Specification (v0.1 beta)
+# ARGUS — Technical Specification (1.0)
 
 ## 1. Goal
 
@@ -20,7 +20,7 @@ Target users: M365 administrators and MSPs running periodic governance assessmen
 | PowerShell | 7.2+ | Cross-platform, `ForEach-Object -Parallel` available later, modern syntax. |
 | Extensibility | Checks discovered from `Checks/**` and optionally from a user folder (`-CustomCheckPath`) | Lets MSPs add their own checks without forking. |
 
-## 3. Public cmdlets (v0.1)
+## 3. Public cmdlets
 
 | Cmdlet | Purpose |
 |---|---|
@@ -83,7 +83,7 @@ Register-ArgusCheck @{
 | `SkipReason` / `ErrorMessage` | As applicable. |
 | `Duration` | Set by the runner. |
 
-Runner rules: checks run sequentially in v0.1; data sets are prefetched once based on the union of `Requires.DataSets` of the selected checks; a check whose `Requires` aren't met is Skipped *before* execution with an explicit reason (`Entra ID P1 licence not detected — signInActivity unavailable`, `Not connected to Exchange Online`, `Missing scope AuditLog.Read.All`).
+Runner rules: checks run sequentially; data sets are prefetched once based on the union of `Requires.DataSets` of the selected checks; a check whose `Requires` aren't met is Skipped *before* execution with an explicit reason (`Entra ID P1 licence not detected — signInActivity unavailable`, `Not connected to Exchange Online`, `Missing scope AuditLog.Read.All`).
 
 ## 5. Configuration (`argus.default.json`)
 
@@ -148,7 +148,7 @@ Graph endpoints are **v1.0**, except CopilotWebSearchPolicy and CopilotPersonali
 | TeamsActivity, SharePointSiteUsage, OneDriveUsage, MailboxUsage | `GET /reports/get…Detail(period='D180')` → 302 → CSV | Reports.Read.All | **Reports Reader** | v1.0 returns CSV (downloaded to a temp file, parsed, deleted). **Global Reader only sees tenant-level totals**, not per-object rows. |
 | SharePointTenantSettings | `GET /admin/sharepoint/settings` | SharePointTenantSettings.Read.All | Global Reader, SharePoint Administrator | `sharingCapability`. |
 | Mailboxes, DistributionGroups | `Get-EXOMailbox`, `Get-DistributionGroup` (EXO) | — (Exchange.ManageAsApp app-only) | Global Reader, View-Only Organization Management | Requires ExchangeOnlineManagement. Mailboxes also carry ForwardingSmtpAddress, ForwardingAddress, DeliverToMailboxAndForward (ARG.EXO.007) and LitigationHoldEnabled / InPlaceHolds (ARG.EXO.005, ARG.EXO.008). ARG.LIC.007 also calls `Get-EXOMailboxStatistics` (TotalItemSize) for licensed shared mailboxes only. |
-| SharePointSites | `Get-PnPTenantSite` (PnP.PowerShell) | — (PnP app registration) | SharePoint Administrator, Global Reader | Optional (ARG.SPO.008, ARG.SPO.009, ARG.SPO.010). Url, SiteId (empty report URLs, ARG.SPO.009/010), Template, Owner, GroupId, SharingCapability (ARG.SPO.006), SensitivityLabel (ARG.SPO.007). Owner without `-Detailed` to be confirmed on a real tenant. |
+| SharePointSites | `Get-PnPTenantSite` (PnP.PowerShell) | — (PnP app registration) | SharePoint Administrator, Global Reader | Optional (ARG.SPO.008, ARG.SPO.009, ARG.SPO.010). Url, SiteId (empty report URLs, ARG.SPO.009/010), Template, Owner, GroupId, SharingCapability (ARG.SPO.006), SensitivityLabel (ARG.SPO.007). Owner is the primary site collection administrator, read without `-Detailed`. |
 | SharePointTenant | `Get-PnPTenant` (PnP.PowerShell) | — (PnP app registration) | SharePoint Administrator, Global Reader | Sharing settings Graph does not expose: ExternalUserExpirationRequired / ExpireInDays, RequireAnonymousLinksExpireInDays (0 = never), DefaultSharingLinkType, CoreDefaultShareLinkScope, OneDriveDefaultShareLinkScope, DefaultLinkPermission (Set-SPOTenant reference). |
 | SharedMailboxPermissions | `Get-EXOMailboxPermission` per shared mailbox (EXO) | — | Global Reader, View-Only Organization Management | Explicit FullAccess trustees (not inherited, not denied, NT AUTHORITY\SELF ignored), keyed by ExternalDirectoryObjectId. One call per shared mailbox. |
 | DistributionGroupMembers | `$batch` `GET /groups/{id}/members?$select=id&$top=1` | GroupMember.Read.All | Global Reader, Directory Readers | HasMembers per group of DistributionGroups ($null when unreadable). |
@@ -162,7 +162,7 @@ Core permissions always requested: Organization.Read.All, LicenseAssignment.Read
 - **Concealed report names**: if `admin/reportSettings.displayConcealedNames` is `true`, usage reports return hashed names/URLs. Checks based on reports must then return `Investigate` with an explanatory summary instead of wrong data, and the report shows a banner.
 - Group owners: avoid N+1 calls — use `$expand=owners($select=id)` or JSON `$batch` (20 requests per batch); verify limits on Learn.
 
-## 8. Check catalogue v0.1
+## 8. Check catalogue
 
 Default thresholds are configurable. "Src" = main data source.
 
@@ -274,23 +274,23 @@ Governance of Copilot licensing, AI data processing and agents (not security pos
 
 The catalogue is a starting point: every data source is verified on Microsoft Learn, and adjustments are proposed (not made silently) when an endpoint/property doesn't behave as described.
 
-## 9. Required permissions (to verify per check)
+## 9. Required permissions
 
 Graph application/delegated, read-only: `User.Read.All`, `Group.Read.All`, `GroupMember.Read.All`, `Directory.Read.All`, `AuditLog.Read.All`, `Application.Read.All`, `RoleManagement.Read.Directory`, `RoleEligibilitySchedule.Read.Directory`, `Organization.Read.All`, `LicenseAssignment.Read.All`, `GroupSettings.Read.All`, `Policy.Read.All`, `Device.Read.All`, `Reports.Read.All`, `ReportSettings.Read.All`, `Sites.Read.All`, `SharePointTenantSettings.Read.All`, `CopilotPolicySettings.Read` (delegated only, beta), `PeopleSettings.Read.All`, `CopilotPackages.Read.All`. The exact list per check comes from `Get-ArgusRequiredPermission` (check scopes + data set permissions, §7).
 Exchange: `Exchange.ManageAsApp` + Entra role **Global Reader** (app-only) or View-Only Organization Management (delegated).
 Commerce (MSCommerce): interactive sign-in on Windows with **Global Reader** (read-only list of product policies); not available app-only.
 Recommended delegated role for interactive runs: **Global Reader** (+ Reports Reader).
 
-### Authentication model (decided 2026-10-19)
+### Authentication model
 
 - **Primary mode: interactive, delegated.** The operator runs ARGUS signed in as a user holding **Application Administrator** (or Cloud Application Administrator) or **Global Administrator**. `Connect-Argus` requests only the read-only delegated Graph scopes returned by `Get-ArgusRequiredPermission`; on the first run in a tenant the operator grants **tenant-wide admin consent** for them at sign-in.
 - Per Microsoft Learn (*Grant tenant-wide admin consent*), Application Administrator / Cloud Application Administrator can consent to any permission **except Microsoft Graph application permissions (app roles)**; delegated Graph scopes are allowed. App-only Graph consent (Certificate / ManagedIdentity sets) requires Privileged Role Administrator or Global Administrator.
-- In delegated mode the effective access is the **intersection** of consented scopes and the signed-in user's own directory role. Some data sets may need a reader role the Application Administrator role doesn't include (sign-in activity, usage reports, SharePoint tenant settings). Phase 4 verifies on Learn the role needed per data set; `Test-ArgusPrerequisite` reports it, and checks whose data can't be read are Skipped with the reason, not Error.
-- Open for Phase 4: consent to the default Microsoft Graph PowerShell client app vs. a dedicated ARGUS app registration (`-ClientId`).
+- In delegated mode the effective access is the **intersection** of consented scopes and the signed-in user's own directory role. Some data sets may need a reader role the Application Administrator role doesn't include (sign-in activity, usage reports, SharePoint tenant settings). The role needed per data set is listed in §7; `Test-ArgusPrerequisite` reports it, and checks whose data can't be read are Skipped with the reason, not Error.
+- Graph and Exchange Online sign in with Microsoft's first-party apps (consent is granted to Microsoft Graph Command Line Tools); `-ClientId` is used only for PnP.PowerShell, which needs an app registration of its own.
 
 ## 10. HTML report
 
-### Look & feel (revised 2026-10-19 after review: "more minimal, essentials only")
+### Look & feel
 Minimal, document-like. Neutral greys, flat surfaces with hairline borders (no shadows, gradients or decorative icons). **Green for Passed, red for Failed, orange for Investigate (shown as "To review")**; every other status (Error, Skipped, NotRun) is grey and always written out (orange added 2026-10-19). Status marks use shape as well as colour (check / cross / dash). System font stack, monospace for IDs/code. Light/dark mode (follows `prefers-color-scheme`, manual toggle). Responsive down to tablet width. Print stylesheet (light palette, expanded details, no interactive controls) so it can be saved as PDF for a customer.
 
 ### Structure
@@ -317,11 +317,11 @@ Minimal, document-like. Neutral greys, flat surfaces with hairline borders (no s
 ## 11. Quality, CI and release
 
 - Pester 5 unit tests with mocked `Invoke-ArgusGraphRequest` / EXO cmdlets and fixtures; one Passed + one Failed test per check; scoring and config-merge tests; a test asserting no check calls a non-GET Graph method.
-- `ci.yml`: on PR/push, PSScriptAnalyzer + Pester on `ubuntu-latest` and `windows-latest`, upload sample report as artifact.
-- `release.yml`: on tag `v*`, build, run tests, `Publish-Module -NuGetApiKey ${{ secrets.PSGALLERY_API_KEY }}`. Prerelease via `PrivateData.PSData.Prerelease = 'beta1'` → version `0.1.0-beta1`.
+- `ci.yml`: on PR/push, PSScriptAnalyzer + Pester on `ubuntu-latest` and `windows-latest`, upload sample report as artifact; fails when `docs/checks` is out of date.
+- `release.yml`: on tag `v*`, checks that the tag matches the manifest version, runs lint, tests, docs, sample and package, validates the package in a local repository, publishes with `Publish-PSResource` (secret `PSGALLERY_API_KEY`) and creates the GitHub release with the module zip and the demo report. Prereleases via `PrivateData.PSData.Prerelease` (for example `preview1` → `1.0.0-preview1`).
 - Manifest: `CompatiblePSEditions = 'Core'`, `PowerShellVersion = '7.2'`, `RequiredModules = 'Microsoft.Graph.Authentication'`, tags (`M365`, `Governance`, `EntraID`, `SharePoint`, `Teams`, `Report`, `Graph`), ProjectUri, LicenseUri (MIT), ReleaseNotes.
 - README: what ARGUS is / is not, quick start (`Install-Module ARGUS`, `Connect-Argus`, `Invoke-Argus`), app-registration setup for unattended runs, permission table, check list (generated), screenshot of the sample report, how to write a custom check.
 
-## 12. Out of scope for v0.1 (backlog)
+## 12. Backlog (not in 1.0)
 
 Parallel execution, trend comparison between two JSON runs, multi-tenant batch runs for MSPs, PDF export, localisation (IT), Power BI export, anonymisation of findings (`-Anonymize`).
