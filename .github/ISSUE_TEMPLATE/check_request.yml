@@ -1,0 +1,71 @@
+name: Check request
+description: Propose a new governance check or a change to an existing one.
+title: "[Check] "
+labels: ["new check", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ARGUS covers **governance and hygiene** (lifecycle, ownership, sprawl, licences, sharing defaults) and is
+        **strictly read-only**. Security-baseline checks (CIS, CISA, MFA, Conditional Access, Defender) are out of
+        scope: tools such as [Maester](https://maester.dev) cover them. Not sure yet? Start in
+        [Discussions › Ideas](https://github.com/dbianchi02/M365-ARGUS/discussions/categories/ideas).
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Entra ID
+        - Applications
+        - Licensing
+        - Groups & Teams
+        - SharePoint & OneDrive
+        - Exchange Online
+        - Copilot & agents
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: What should the check find, and why does it matter?
+      placeholder: Teams whose only owner is a disabled account, because nobody can manage membership or approve guests.
+    validations:
+      required: true
+  - type: textarea
+    id: logic
+    attributes:
+      label: Pass / fail logic
+      description: When is the check Passed, Failed or To review? Which thresholds should be configurable?
+    validations:
+      required: true
+  - type: textarea
+    id: data
+    attributes:
+      label: Data source
+      description: The Graph endpoint, Exchange or PnP cmdlet that exposes the data, with its read permission and any licence requirement (links to Microsoft Learn are welcome).
+      placeholder: GET /groups/{id}/owners (GroupMember.Read.All), v1.0
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Suggested severity
+      options:
+        - Info
+        - Low
+        - Medium
+        - High
+        - Critical
+  - type: textarea
+    id: remediation
+    attributes:
+      label: How to fix it
+      description: The remediation steps an administrator should follow.
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - label: This is a governance / hygiene check, not a security-baseline control.
+          required: true
+        - label: It can be evaluated with read-only permissions.
+          required: true

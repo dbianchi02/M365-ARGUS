@@ -1,0 +1,68 @@
+name: Bug report
+description: A check returns a wrong result or an error, a cmdlet fails, or the report does not render correctly.
+title: "[Bug] "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem. **Do not paste real tenant data**: replace tenant names, domains, user
+        names, site URLs and IDs with fictitious values, and never attach a report from a real tenant.
+        For questions use [Discussions](https://github.com/dbianchi02/M365-ARGUS/discussions); for vulnerabilities
+        use a [private report](https://github.com/dbianchi02/M365-ARGUS/security/advisories/new).
+  - type: input
+    id: check
+    attributes:
+      label: Check ID
+      description: The check concerned, if any.
+      placeholder: ARG.SPO.009
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: The status, summary or error you got, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: The commands you ran.
+      render: powershell
+      placeholder: |
+        Connect-Argus -Service All -ClientId <app id>
+        Invoke-Argus -Id ARG.SPO.009 -Verbose
+    validations:
+      required: true
+  - type: input
+    id: argus-version
+    attributes:
+      label: ARGUS version
+      description: "`Get-Module ARGUS | Select-Object Version, @{ n = 'Prerelease'; e = { $_.PrivateData.PSData.Prerelease } }`"
+      placeholder: 1.0.0-preview1
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: PowerShell version (`$PSVersionTable.PSVersion`), operating system, sign-in mode and the optional module versions.
+      placeholder: |
+        PowerShell 7.5.4 on Windows 11
+        Interactive (delegated), Global Reader + Reports Reader
+        ExchangeOnlineManagement 3.9.0, PnP.PowerShell 3.1.0
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Verbose output or error (sanitised)
+      description: The relevant part of `-Verbose` output or the error record, with real names removed.
+      render: text
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Confirmation
+      options:
+        - label: I removed every real tenant name, user, URL, ID and token from this issue.
+          required: true

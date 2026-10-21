@@ -2,6 +2,8 @@
 
 Thanks for your interest in ARGUS. Please read [docs/ARGUS-SPEC.md](docs/ARGUS-SPEC.md) before any non-trivial change.
 
+Everyone taking part in the project follows the [Code of Conduct](CODE_OF_CONDUCT.md). Questions and ideas belong in [Discussions](https://github.com/dbianchi02/M365-ARGUS/discussions); for a larger change, open a [check request](https://github.com/dbianchi02/M365-ARGUS/issues/new?template=check_request.yml) or a discussion first so we can agree on the approach.
+
 ## Ground rules
 
 - **Governance only.** ARGUS is not a security baseline: CIS / CISA / MFA / Conditional Access / Defender-style checks are out of scope.
