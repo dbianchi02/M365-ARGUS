@@ -71,9 +71,103 @@ function Invoke-TestTask {
     Write-Information "Test: $($result.PassedCount) test(s) passed."
 }
 
+function ConvertTo-MarkdownCell {
+    param([AllowNull()] [object] $Value)
+    $text = (@($Value | Where-Object { $null -ne $_ -and "$_" -ne '' }) | ForEach-Object { "$_" }) -join ', '
+    if (-not $text) { return [string][char]0x2014 }
+    $text.Replace('|', '\|').Replace("`r", '').Replace("`n", ' ')
+}
+
 function Invoke-DocsTask {
-    # Implemented in Phase 6: generates docs/checks/<Id>.md and the README check table from metadata.
-    Write-Warning 'Docs task is a placeholder until Phase 6 (no checks registered yet). Nothing generated.'
+    # Output is deterministic (no dates, sorted, LF endings) so CI can fail when docs are out of date.
+    Import-Module (Join-Path $moduleRoot 'ARGUS.psd1') -Force
+    $docsRoot = Join-Path $repoRoot 'docs/checks'
+    $null = New-Item -Path $docsRoot -ItemType Directory -Force
+    Get-ChildItem -LiteralPath $docsRoot -Filter '*.md' | Remove-Item -Force
+
+    $checks = @(Get-ArgusCheck | Sort-Object Area, Id)
+    foreach ($check in $checks) {
+        $permission = Get-ArgusRequiredPermission -Id $check.Id
+        $graphScopes = @($permission.GraphPermissions | ForEach-Object { '`' + $_ + '`' })
+        $lines = [System.Collections.Generic.List[string]]::new()
+        $lines.Add("# $($check.Id) $([char]0x2014) $($check.Title)")
+        $lines.Add('')
+        $lines.Add('| | |')
+        $lines.Add('|---|---|')
+        $lines.Add("| Area | $($check.Area) |")
+        $lines.Add("| Category | $(ConvertTo-MarkdownCell $check.Category) |")
+        $lines.Add("| Severity | $($check.Severity) |")
+        $lines.Add("| Services | $(ConvertTo-MarkdownCell $check.Requires.Services) |")
+        $lines.Add("| Graph permissions (read-only) | $(ConvertTo-MarkdownCell $graphScopes) |")
+        $lines.Add("| Directory roles (delegated) | $(ConvertTo-MarkdownCell $permission.DirectoryRoles) |")
+        if ($permission.ExchangePermission) { $lines.Add("| Exchange Online | $(ConvertTo-MarkdownCell $permission.ExchangePermission) |") }
+        $lines.Add("| Licences | $(ConvertTo-MarkdownCell $check.Requires.Licenses) |")
+        $lines.Add("| Data sets | $(ConvertTo-MarkdownCell $check.Requires.DataSets)$(if ($check.Requires.OptionalDataSets) { " (optional: $(ConvertTo-MarkdownCell $check.Requires.OptionalDataSets))" }) |")
+        $lines.Add("| Uses Graph beta | $(if ($check.UsesBeta) { 'Yes' } else { 'No' }) |")
+        $lines.Add("| Tags | $(ConvertTo-MarkdownCell $check.Tags) |")
+        $lines.Add('')
+        $lines.Add('## What is checked')
+        $lines.Add('')
+        $lines.Add($check.Description)
+        $lines.Add('')
+        $lines.Add('## Why it matters')
+        $lines.Add('')
+        $lines.Add($check.Rationale)
+        $lines.Add('')
+        $lines.Add('## How to fix')
+        $lines.Add('')
+        $lines.Add(($check.Remediation.Steps -replace "`r", ''))
+        if ($check.Remediation.PortalUrl) {
+            $lines.Add('')
+            $lines.Add("Portal: <$($check.Remediation.PortalUrl)>")
+        }
+        if ($check.Remediation.PowerShell) {
+            $lines.Add('')
+            $lines.Add('```powershell')
+            $lines.Add(($check.Remediation.PowerShell -replace "`r", ''))
+            $lines.Add('```')
+        }
+        if ($check.Parameters -and $check.Parameters.Count -gt 0) {
+            $lines.Add('')
+            $lines.Add('## Parameters')
+            $lines.Add('')
+            $lines.Add("Defaults, overridable in the configuration file under ``Checks.""$($check.Id)"".Parameters``.")
+            $lines.Add('')
+            $lines.Add('| Name | Default |')
+            $lines.Add('|---|---|')
+            foreach ($name in @($check.Parameters.Keys | Sort-Object)) {
+                $lines.Add("| ``$name`` | $(ConvertTo-MarkdownCell $check.Parameters[$name]) |")
+            }
+        }
+        if ($check.References) {
+            $lines.Add('')
+            $lines.Add('## References')
+            $lines.Add('')
+            foreach ($reference in @($check.References)) { $lines.Add("- [$($reference.Title)]($($reference.Url))") }
+        }
+        $lines.Add('')
+        $lines.Add('---')
+        $lines.Add('')
+        $lines.Add('*Generated from the check metadata by `./build/build.ps1 -Task Docs`. Do not edit by hand.*')
+        [System.IO.File]::WriteAllText((Join-Path $docsRoot "$($check.Id).md"), (($lines -join "`n") + "`n"))
+    }
+
+    $index = [System.Collections.Generic.List[string]]::new()
+    $index.Add('# ARGUS check catalogue')
+    $index.Add('')
+    $index.Add("$($checks.Count) read-only governance checks. Generated from the check metadata by ``./build/build.ps1 -Task Docs``.")
+    foreach ($area in @($checks | Group-Object Area)) {
+        $index.Add('')
+        $index.Add("## $($area.Name) ($($area.Count))")
+        $index.Add('')
+        $index.Add('| Id | Check | Severity | Services |')
+        $index.Add('|---|---|---|---|')
+        foreach ($check in $area.Group) {
+            $index.Add("| [$($check.Id)]($($check.Id).md) | $(ConvertTo-MarkdownCell $check.Title) | $($check.Severity) | $(ConvertTo-MarkdownCell $check.Requires.Services) |")
+        }
+    }
+    [System.IO.File]::WriteAllText((Join-Path $docsRoot 'README.md'), (($index -join "`n") + "`n"))
+    Write-Information "Docs: $($checks.Count) check page(s) and the index written to $docsRoot"
 }
 
 function Invoke-SampleTask {

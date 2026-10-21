@@ -140,7 +140,7 @@ Each check has a severity weight (Critical 10, High 5, Medium 3, Low 1, Info 0).
 | Exchange Online (`ARG.EXO`) | 10 | shared mailboxes with sign-in, inactive mailboxes, forwarding, distribution groups without owner |
 | Copilot & agents (`ARG.COP`) | 12 | self-service purchase and trials, unused Copilot licences, web search, agent sharing and requests |
 
-`Get-ArgusCheck` lists the full catalogue with descriptions, severities and references; the report contains the same information for every check.
+The full catalogue, with one page per check (what is checked, why it matters, how to fix it, permissions, parameters and references), is in [docs/checks](docs/checks/README.md). `Get-ArgusCheck` returns the same metadata in PowerShell.
 
 ## Custom checks
 
@@ -155,6 +155,7 @@ Invoke-Argus -CustomCheckPath ./my-checks
 ```powershell
 ./build/build.ps1 -Task Lint      # PSScriptAnalyzer
 ./build/build.ps1 -Task Test      # Pester (Graph fully mocked)
+./build/build.ps1 -Task Docs      # regenerate docs/checks from the check metadata
 ./build/build.ps1 -Task Sample    # regenerate samples/sample-report.html from fixtures
 ./build/build.ps1 -Task Package   # stage the module for publishing
 ```

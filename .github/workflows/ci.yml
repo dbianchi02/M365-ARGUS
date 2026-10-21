@@ -39,6 +39,13 @@ jobs:
       - name: Build sample report
         run: ./build/build.ps1 -Task Sample
 
+      - name: Check that the check docs are up to date
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          ./build/build.ps1 -Task Docs
+          $changes = git status --porcelain -- docs/checks
+          if ($changes) { $changes; throw 'docs/checks is out of date: run ./build/build.ps1 -Task Docs and commit the result.' }
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
