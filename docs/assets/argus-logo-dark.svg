@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="80" viewBox="0 0 300 80" role="img" aria-label="ARGUS">
+  <title>ARGUS</title>
+  <rect x="8" y="8" width="64" height="64" rx="16" fill="#fafafa"/>
+  <g transform="translate(16 16) scale(2)" fill="none" stroke="#0e0e10" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M2.5 12s3.5-6.5 9.5-6.5 9.5 6.5 9.5 6.5-3.5 6.5-9.5 6.5S2.5 12 2.5 12z"/>
+    <circle cx="12" cy="12" r="3"/>
+  </g>
+  <g transform="translate(100 22)" fill="none" stroke="#fafafa" stroke-width="5.5" stroke-linecap="butt" stroke-linejoin="miter">
+    <path d="M0.6 36 L11.4 2.75 H14.6 L25.4 36 M5 25 H21"/>
+    <path transform="translate(40 0)" d="M2.75 36 V2.75 H14 A8 8 0 0 1 14 18.75 H2.75 M13 18.75 L25 36"/>
+    <path transform="translate(80 0)" d="M23.25 11.75 A10.25 9 0 0 0 2.75 11.75 V24.25 A10.25 9 0 0 0 23.25 24.25 V19 H14"/>
+    <path transform="translate(120 0)" d="M2.75 0 V24.25 A10.25 9 0 0 0 23.25 24.25 V0"/>
+    <path transform="translate(160 0)" d="M22.5 8 C21 4.5 17.5 2.75 13 2.75 C7 2.75 3.25 5.5 3.25 10 C3.25 20.5 23 15 23 26 C23 30.5 19 33.25 13 33.25 C8 33.25 4.5 31.5 2.5 28"/>
+  </g>
+</svg>
