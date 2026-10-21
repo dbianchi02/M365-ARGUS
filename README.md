@@ -1,15 +1,48 @@
-# ARGUS — Automated Report & Governance Utility Suite
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/argus-logo-dark.svg">
+    <img alt="ARGUS" src="docs/assets/argus-logo-light.svg" width="340">
+  </picture>
+</p>
 
-[![CI](https://github.com/dbianchi02/M365-ARGUS/actions/workflows/ci.yml/badge.svg)](https://github.com/dbianchi02/M365-ARGUS/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+<h3 align="center">Automated Report &amp; Governance Utility Suite</h3>
 
-> **Status: 1.0.0-preview1.** The module is feature complete and has been run against production tenants, but it is a preview: check titles, thresholds and the JSON schema may still change before 1.0.0.
+<p align="center">
+  Read-only governance assessment for Microsoft 365: 73 checks, a weighted Governance Score<br>
+  and a self-contained HTML report that explains every finding and how to fix it.
+</p>
+
+<p align="center">
+  <a href="https://www.powershellgallery.com/packages/ARGUS"><img alt="PowerShell Gallery version" src="https://img.shields.io/powershellgallery/v/ARGUS?include_prereleases&amp;logo=powershell&amp;logoColor=white&amp;label=PowerShell%20Gallery"></a>
+  <a href="https://www.powershellgallery.com/packages/ARGUS"><img alt="PowerShell Gallery downloads" src="https://img.shields.io/powershellgallery/dt/ARGUS?logo=powershell&amp;logoColor=white&amp;label=downloads"></a>
+  <a href="https://github.com/dbianchi02/M365-ARGUS/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/dbianchi02/M365-ARGUS/ci.yml?branch=main&amp;logo=github&amp;label=CI"></a>
+  <a href="https://github.com/dbianchi02/M365-ARGUS/releases"><img alt="Latest release" src="https://img.shields.io/github/v/release/dbianchi02/M365-ARGUS?include_prereleases&amp;sort=semver&amp;logo=github&amp;label=release"></a>
+  <br>
+  <img alt="PowerShell 7.2+" src="https://img.shields.io/badge/PowerShell-7.2%2B-5391FE?logo=powershell&amp;logoColor=white">
+  <img alt="Platforms" src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-informational">
+  <img alt="Read-only" src="https://img.shields.io/badge/tenant%20access-read--only-2ea44f">
+  <a href="https://github.com/dbianchi02/M365-ARGUS/discussions"><img alt="Discussions" src="https://img.shields.io/github/discussions/dbianchi02/M365-ARGUS?logo=github&amp;label=discussions"></a>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/github/license/dbianchi02/M365-ARGUS"></a>
+</p>
+
+<p align="center">
+  <a href="#quick-start">Quick start</a> ·
+  <a href="docs/checks/README.md">Check catalogue</a> ·
+  <a href="https://github.com/dbianchi02/M365-ARGUS/releases">Sample report</a> ·
+  <a href="CHANGELOG.md">Changelog</a> ·
+  <a href="https://github.com/dbianchi02/M365-ARGUS/discussions">Discussions</a>
+</p>
+
+> [!NOTE]
+> **ARGUS 1.0.0 is in preview.** The module is feature complete and has been run against production tenants; check titles, thresholds and the JSON schema may still change before the stable 1.0.0. Install it with `-AllowPrerelease`.
 
 ARGUS is a PowerShell module that runs **read-only governance checks** against a Microsoft 365 tenant, computes a weighted **Governance Score** and produces a self-contained **HTML report** (plus JSON and optional CSV) listing every check, what was found and how to fix it.
 
-See [`samples/sample-report.html`](samples/sample-report.html) for a report generated from fictitious data (download it and open it in a browser).
+<p align="center">
+  <img width="1279" alt="ARGUS report: governance score, score by area and the list of checks" src="https://github.com/user-attachments/assets/8c0292d8-c053-4697-8f9e-6f5ccd934080">
+</p>
 
-<img width="1279" height="940" alt="image" src="https://github.com/user-attachments/assets/8c0292d8-c053-4697-8f9e-6f5ccd934080" />
+A report generated from fictitious data is attached to every [release](https://github.com/dbianchi02/M365-ARGUS/releases) (`sample-report.html`) and kept in [`samples/`](samples/sample-report.html): download it and open it in a browser.
 
 
 ## What ARGUS is
@@ -161,6 +194,15 @@ Invoke-Argus -CustomCheckPath ./my-checks
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), the [CHANGELOG](CHANGELOG.md) and the full specification in [docs/ARGUS-SPEC.md](docs/ARGUS-SPEC.md).
+
+## Community and support
+
+- **Questions and ideas**: [Discussions](https://github.com/dbianchi02/M365-ARGUS/discussions) (Q&A, Ideas, Show and tell).
+- **Bugs and check requests**: [Issues](https://github.com/dbianchi02/M365-ARGUS/issues/new/choose), using the templates.
+- **Vulnerabilities**: privately, as described in [SECURITY.md](SECURITY.md).
+- **Contributing**: read [CONTRIBUTING.md](CONTRIBUTING.md); everyone taking part follows the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+Please never post real tenant data, reports or screenshots from a real tenant in issues or discussions. See [SUPPORT.md](SUPPORT.md) for where to ask what.
 
 ## Disclaimer
 
