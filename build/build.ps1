@@ -8,7 +8,7 @@
     - Lint    : PSScriptAnalyzer on module, build and tests (settings: PSScriptAnalyzerSettings.psd1).
     - Test    : Pester 5 unit tests (Graph fully mocked). Writes NUnit XML to output/.
     - Docs    : regenerates docs/checks/*.md from check metadata.
-    - Sample  : regenerates samples/sample-report.html from tests/Fixtures/sample-results.json.
+    - Sample  : regenerates samples/sample-report.html (test sample) and samples/showcase-report.html (public demo).
     - Package : stages the module under output/package/ARGUS for publishing and validates the manifest.
     - All     : Lint, Test, Docs, Sample, Package.
 
@@ -177,6 +177,8 @@ function Invoke-SampleTask {
     $target = Join-Path $repoRoot 'samples/sample-report.html'
     $file = Export-ArgusReport -InputPath $fixture -OutputPath $target -NoBrowser
     Write-Information "Sample: $($file.FullName) ($([math]::Round($file.Length / 1KB)) KB)"
+    # Public demo (healthy fictitious tenant), linked from the README and attached to releases.
+    $null = & (Join-Path $PSScriptRoot 'New-ShowcaseReport.ps1')
 }
 
 function Invoke-PackageTask {

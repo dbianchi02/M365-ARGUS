@@ -70,7 +70,7 @@ jobs:
         run: |
           $prerelease = '${{ steps.version.outputs.prerelease }}' -eq 'true'
           $install = if ($prerelease) { 'Install-Module ARGUS -AllowPrerelease' } else { 'Install-Module ARGUS' }
-          $arguments = @($env:GITHUB_REF_NAME, "./output/ARGUS-${{ steps.version.outputs.version }}.zip", './samples/sample-report.html',
+          $arguments = @($env:GITHUB_REF_NAME, "./output/ARGUS-${{ steps.version.outputs.version }}.zip", './samples/showcase-report.html',
               '--title', "ARGUS ${{ steps.version.outputs.version }}", '--verify-tag',
               '--notes', "Install with ``$install``. See [CHANGELOG.md](CHANGELOG.md) for the changes.")
           if ($prerelease) { $arguments += '--prerelease' }

@@ -42,7 +42,7 @@ ARGUS is a PowerShell module that runs **read-only governance checks** against a
   </picture>
 </p>
 
-A report generated from fictitious data is attached to every [release](https://github.com/dbianchi02/M365-ARGUS/releases) (`sample-report.html`) and kept in [`samples/`](samples/sample-report.html): download it and open it in a browser.
+A demo report of a fictitious tenant is attached to every [release](https://github.com/dbianchi02/M365-ARGUS/releases/latest) (`showcase-report.html`) and kept in [`samples/`](samples/showcase-report.html): download it and open it in a browser.
 
 
 ## What ARGUS is
