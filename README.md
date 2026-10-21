@@ -9,6 +9,9 @@ ARGUS is a PowerShell module that runs **read-only governance checks** against a
 
 See [`samples/sample-report.html`](samples/sample-report.html) for a report generated from fictitious data (download it and open it in a browser).
 
+<img width="1279" height="940" alt="image" src="https://github.com/user-attachments/assets/8c0292d8-c053-4697-8f9e-6f5ccd934080" />
+
+
 ## What ARGUS is
 
 - A **governance / hygiene** assessment of 73 checks across Entra ID, app registrations, licensing, Microsoft 365 Groups & Teams, SharePoint & OneDrive, Exchange Online and Copilot & agents.
