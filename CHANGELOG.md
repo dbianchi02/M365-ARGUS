@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- App-only sign-in with a certificate is now validated on Windows for Microsoft Graph, Exchange Online and
+  SharePoint (PnP). The README documents the full setup: app registration, application permissions
+  (Microsoft Graph, `Exchange.ManageAsApp` from Office 365 Exchange Online, SharePoint
+  `Sites.FullControl.All`), the Global Reader role for Exchange, certificate creation and upload, and the
+  common setup errors. Managed identity remains implemented but not validated.
+
 ## [1.0.0] - 2026-10-21
 
 First stable release, validated with interactive runs on production tenants of different sizes. It supersedes

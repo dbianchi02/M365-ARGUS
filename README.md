@@ -186,6 +186,8 @@ Export-ArgusReport -InputPath ./output/ARGUS-Report-contoso-20261021-1144.json  
 | Inactivity checks show **To review** and a banner about concealed names | Usage reports conceal names: see [step 1](#1-show-real-names-in-the-usage-reports). |
 | Warning *SharePoint (PnP) was not connected* | `-ClientId` is missing or wrong, PnP.PowerShell is not installed, or the admin URL could not be derived (pass `-SharePointAdminUrl https://contoso-admin.sharepoint.com`). The SharePoint checks that need PnP are then Skipped or partial. |
 | Exchange Online sign-in fails or hangs | Update ExchangeOnlineManagement to 3.7.2 or later; ARGUS signs in through the browser (`-DisableWAM`) to avoid the WAM error in PowerShell 7 terminals. |
+| App-only: *Exchange Online connection failed: UnAuthorized* | `Exchange.ManageAsApp` was added under Microsoft Graph instead of **Office 365 Exchange Online**, admin consent is missing, or the app has no Global Reader role (allow up to 30 minutes after assigning it). See [app-only step 2](#2-add-the-api-permissions). |
+| App-only: ARG.SPO.003 to 007 in Error with *Attempted to perform an unauthorized operation* | The app has SharePoint `Sites.Read.All`, which the SharePoint admin APIs reject app-only: grant SharePoint `Sites.FullControl.All` or leave `SharePoint` out of `-Service`. |
 | ARG.COP.001 is Skipped | The Commerce connection (MSCommerce) is available only for interactive sign-in on Windows. |
 | A check is Skipped for a missing licence | The tenant has no licence for that feature (for example Entra ID P1 for sign-in activity, Microsoft 365 Copilot): expected. |
 | A check is Skipped for a missing role or permission | The signed-in account cannot read that data: see [Roles and least privilege](#roles-and-least-privilege). |
@@ -204,18 +206,65 @@ Uninstall-Module ARGUS -AllVersions      # remove ARGUS
 Reports in `./output` are not touched by updates or uninstall.
 ## Unattended runs (app-only)
 
+App-only sign-in with a **certificate** is validated on Windows for Microsoft Graph, Exchange Online and SharePoint (PnP). It uses one app registration of your own; no user signs in. Set it up once, signed in to the [Microsoft Entra admin center](https://entra.microsoft.com) as a Global Administrator (or Privileged Role Administrator).
+
+### 1. Register the app
+
+*Entra ID › App registrations › New registration*: a name (for example `ARGUS App-only`), **Accounts in this organizational directory only**, no redirect URI. Note the **Application (client) ID**.
+
+### 2. Add the API permissions
+
+In the app, *API permissions › Add a permission*, always choosing **Application permissions** (not Delegated):
+
+| API (where to find it) | Application permission | Needed for |
+|---|---|---|
+| **Microsoft Graph** | every permission listed by `Get-ArgusRequiredPermission -Aggregate -AsAppPermission` (see [Permissions](#permissions)) | all Graph checks |
+| **Office 365 Exchange Online** (tab *APIs my organization uses*) | `Exchange.ManageAsApp` | Exchange checks |
+| **SharePoint** | `Sites.FullControl.All` | SharePoint tenant settings and site list (ARG.SPO.003 to 007) |
+
+Then click **Grant admin consent for &lt;tenant&gt;** and check that every row shows *Granted*.
+
+> [!IMPORTANT]
+> `Exchange.ManageAsApp` also appears under **Microsoft Graph**, where it does not work. Add it from **Office 365 Exchange Online**: otherwise the Exchange connection fails with *UnAuthorized*.
+
 > [!WARNING]
-> App-only sign-in (certificate or managed identity) is implemented but has not been validated on a production tenant during the preview. Interactive runs are the supported path for now.
+> SharePoint `Sites.Read.All` is **not enough**: the SharePoint admin APIs used by `Get-PnPTenant` and `Get-PnPTenantSite` reject it app-only (*Attempted to perform an unauthorized operation*). `Sites.FullControl.All` is required by Microsoft for these APIs. ARGUS only reads, but the permission itself allows writing to every site: protect the certificate accordingly. If you prefer not to grant it, leave `SharePoint` out of `-Service`; ARG.SPO.003 to 007 are then Skipped and can be run interactively.
+
+### 3. Give the app the Global Reader role (Exchange)
+
+*Entra ID › Roles and administrators › Global Reader › Add assignments* and select the app. Exchange Online needs this role to read mailboxes and settings app-only. The assignment can take up to 30 minutes to reach Exchange.
+
+### 4. Create and upload a certificate
+
+On the computer that will run ARGUS (Windows PowerShell 7):
 
 ```powershell
-# Certificate
-Connect-Argus -TenantId contoso.onmicrosoft.com -ClientId <app id> -CertificateThumbprint <thumbprint> -Service Graph, Exchange, SharePoint
-# Managed identity (Azure Automation, Azure Functions, VMs)
-Connect-Argus -ManagedIdentity
+$cert = New-SelfSignedCertificate -Subject 'CN=ARGUS App-only' -CertStoreLocation Cert:\CurrentUser\My `
+    -KeyExportPolicy NonExportable -KeySpec Signature -KeyLength 2048 -NotAfter (Get-Date).AddMonths(12)
+Export-Certificate -Cert $cert -FilePath "$HOME\Desktop\argus-app-only.cer"
+$cert.Thumbprint
+```
+
+The private key stays in your certificate store. Upload only the `.cer` file in the app: *Certificates & secrets › Certificates › Upload certificate*. Every computer that runs ARGUS needs the certificate with its private key. Renew it before it expires (ARG.APP.005 will remind you).
+
+### 5. Connect and run
+
+```powershell
+Connect-Argus -TenantId contoso.onmicrosoft.com -ClientId <application id> -CertificateThumbprint <thumbprint> -Service Graph, Exchange, SharePoint
+Test-ArgusPrerequisite
 Invoke-Argus -NoBrowser -NoBanner
 ```
 
-The app registration needs the Microsoft Graph **application** permissions listed by `Get-ArgusRequiredPermission -Aggregate -AsAppPermission`, granted by a Privileged Role Administrator or Global Administrator. For Exchange Online add `Exchange.ManageAsApp` and the Entra role Global Reader to the app. The Commerce checks are not available app-only.
+`-Organization` (the Exchange organization) and the SharePoint admin URL are derived from the tenant. `Test-ArgusPrerequisite` should show `MissingPermissions` empty and Graph, Exchange and SharePoint connected; `SignedInUserRoles` and `RecommendedRoles` apply only to interactive sign-in and can be ignored.
+
+Expected differences from an interactive run:
+
+- ARG.COP.001 is Skipped: the Commerce policies (MSCommerce) are available only with interactive sign-in.
+- [Concealed names in usage reports](#1-show-real-names-in-the-usage-reports) affect app-only runs too.
+
+### Managed identity
+
+`Connect-Argus -ManagedIdentity` (system-assigned) or `-ManagedIdentity -ClientId <client id>` (user-assigned) uses the identity of an Azure host such as Azure Automation or Azure Functions. The identity needs the same application permissions and role as above, assigned with PowerShell because the portal cannot add API permissions to a managed identity. This mode is implemented but has not been validated yet.
 
 ## Permissions
 

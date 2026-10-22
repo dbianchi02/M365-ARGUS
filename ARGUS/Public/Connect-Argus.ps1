@@ -20,7 +20,10 @@ function Connect-Argus {
         is limited by the signed-in user's own roles: Global Reader plus Reports Reader is recommended.
 
         Certificate and ManagedIdentity are app-only (unattended). Their Graph application permissions must
-        be granted by a Privileged Role Administrator or Global Administrator.
+        be granted by a Privileged Role Administrator or Global Administrator. Exchange Online also needs
+        Exchange.ManageAsApp (Office 365 Exchange Online API) and the Entra role Global Reader; SharePoint
+        (PnP) needs the SharePoint application permission Sites.FullControl.All, because its admin APIs
+        reject Sites.Read.All app-only. See the README section "Unattended runs (app-only)".
 
         After sign-in ARGUS reads the tenant name and domains, detects Entra ID P1/P2 and checks whether
         usage reports conceal names. The Graph token is kept for this PowerShell process only.
